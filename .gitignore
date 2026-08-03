@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Env files - never commit real secrets
+.env
+.env.local
+
+# Build output
+dist/
+build/
+
+# Editor/OS cruft
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# User-uploaded files (local dev only - never commit real uploads)
+backend-node/uploads/*
+!backend-node/uploads/.gitkeep

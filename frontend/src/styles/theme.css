@@ -1,0 +1,510 @@
+/* =============================================================================
+   Pickle Rick - Design tokens ("Brine Lab" theme)
+   =============================================================================
+   Direction: an apothecary/specimen-lab notebook, not a neon sci-fi lab -
+   bright parchment-white backdrop, deep pickleball-court green as the brand
+   accent (nav, headings, primary actions), mustard-brine as the secondary
+   highlight, rust hazard-label accent for warnings/destructive actions.
+   Courts are drawn like specimen jars on a shelf; each court card includes
+   a "brine gauge" (a jar-fill meter) showing how full that day's bookings
+   are - this is the one signature visual element.
+   ========================================================================== */
+
+:root {
+  /* Tells the browser this page IS deliberately light, so Chrome/Edge/OS
+     "force dark mode for web contents" doesn't auto-invert it (that
+     inversion is what makes saturated colors like --color-court-green
+     survive untouched while the white background flips to near-black -
+     exactly the "still looks dark" symptom after a light re-theme). */
+  color-scheme: light;
+
+  /* Color */
+  --color-bg: #f7f9f4;           /* bright, faintly green-tinted parchment (page background) */
+  --color-surface: #ffffff;      /* card/surface white */
+  --color-surface-raised: #eef3e6; /* one step off-white, for inputs/wells */
+  --color-court-green: #2f6b3c;  /* deep pickleball-court green - primary brand accent */
+  --color-brine: #8ea82e;        /* mustard-lime, darkened for contrast on white - secondary accent */
+  --color-hazard: #b5482b;       /* burnt rust - warnings, cancel, destructive */
+  --color-ink: #1c231d;          /* near-black ink, for readability on white */
+  --color-ink-muted: #5c6b58;    /* muted sage-grey - secondary text */
+  --color-border: #dde5d6;
+
+  /* Type */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Layout */
+  --radius-jar: 10px;
+  --shadow-jar: 0 4px 14px rgba(47, 107, 60, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0 0 0.4em 0;
+  letter-spacing: -0.01em;
+}
+
+.label-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+a {
+  color: var(--color-court-green);
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 0.65em 1.4em;
+  background: var(--color-court-green);
+  color: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(47, 107, 60, 0.25);
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-court-green);
+  outline-offset: 2px;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+}
+
+button.accent {
+  background: var(--color-brine);
+  color: #1c231d;
+}
+
+button.danger {
+  background: var(--color-hazard);
+  color: #ffffff;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+input,
+select {
+  font-family: var(--font-body);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.6em 0.8em;
+  color: var(--color-ink);
+  width: 100%;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-jar);
+  box-shadow: var(--shadow-jar);
+  padding: 1.75rem;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 380px;
+}
+
+.error-banner {
+  background: rgba(181, 72, 43, 0.18);
+  border: 1px solid var(--color-hazard);
+  color: var(--color-ink);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* Reduced-motion users skip the hover lift on buttons/cards. */
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}
+
+/* =============================================================================
+   Landing page floating geometric accents
+   ========================================================================== */
+
+@keyframes float-a {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(6deg); }
+}
+
+@keyframes float-b {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(10px) translateX(6px); }
+}
+
+@keyframes float-c {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-8deg); }
+}
+
+.float-a { animation: float-a 6s ease-in-out infinite; }
+.float-b { animation: float-b 7.5s ease-in-out infinite; }
+.float-c { animation: float-c 5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .float-a, .float-b, .float-c {
+    animation: none;
+  }
+}
+
+/* =============================================================================
+   Nav / profile menu
+   ========================================================================== */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  position: relative;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.avatar {
+  border-radius: 999px;
+  object-fit: cover;
+  background: var(--color-surface-raised);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-court-green);
+  font-family: var(--font-display);
+  font-weight: 600;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+
+.nav-profile {
+  position: relative;
+}
+
+.nav-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.35em 0.9em 0.35em 0.35em;
+}
+
+.nav-profile-trigger:hover {
+  box-shadow: none;
+  transform: none;
+  border-color: var(--color-court-green);
+}
+
+.nav-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-jar);
+  box-shadow: var(--shadow-jar);
+  min-width: 190px;
+  padding: 0.4rem;
+  z-index: 20;
+}
+
+.nav-dropdown a,
+.nav-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--color-ink);
+  border: none;
+  border-radius: 6px;
+  padding: 0.55em 0.7em;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.nav-dropdown a:hover,
+.nav-dropdown button:hover {
+  background: var(--color-surface-raised);
+  transform: none;
+  box-shadow: none;
+}
+
+/* =============================================================================
+   Admin sidebar layout
+   ========================================================================== */
+
+.sidebar-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  align-items: start;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.sidebar-link {
+  padding: 0.6em 0.9em;
+  border-radius: 8px;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
+.sidebar-link:hover {
+  background: var(--color-surface-raised);
+}
+
+.sidebar-link.active {
+  background: var(--color-court-green);
+  color: #ffffff;
+}
+
+@media (max-width: 720px) {
+  .sidebar-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    flex-direction: row;
+    position: static;
+    overflow-x: auto;
+  }
+}
+
+/* =============================================================================
+   Accordion (Admin court-detail hourly slot list)
+   ========================================================================== */
+
+.accordion-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-jar);
+  background: var(--color-surface);
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  color: var(--color-ink);
+  border: none;
+  border-radius: 0;
+  padding: 0.9em 1.1em;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.accordion-header:hover {
+  background: var(--color-surface-raised);
+  transform: none;
+  box-shadow: none;
+}
+
+.accordion-body {
+  padding: 0 1.1em 1.1em;
+  border-top: 1px solid var(--color-border);
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0;
+}
+
+/* Empty Pasalo seat placeholder - dashed outline, no content. */
+.avatar-ghost {
+  border-radius: 999px;
+  border: 1.5px dashed var(--color-border);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* =============================================================================
+   Calendar popover
+   ========================================================================== */
+
+.calendar-popover {
+  position: absolute;
+  z-index: 30;
+  margin-top: 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-jar);
+  box-shadow: var(--shadow-jar);
+  padding: 1rem;
+  width: 280px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.calendar-grid button {
+  padding: 0.5em 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-ink);
+  box-shadow: none;
+  font-weight: 500;
+}
+
+.calendar-grid button:hover {
+  background: var(--color-surface-raised);
+  transform: none;
+  box-shadow: none;
+}
+
+.calendar-grid button.selected {
+  background: var(--color-court-green);
+  color: #ffffff;
+}
+
+.calendar-grid button:disabled {
+  color: var(--color-ink-muted);
+  opacity: 0.35;
+}
+
+/* =============================================================================
+   Hourly slot picker
+   ========================================================================== */
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.5rem;
+}
+
+.slot-button {
+  padding: 0.55em 0.4em;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+.slot-button.available {
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+}
+
+.slot-button.requestable {
+  background: rgba(142, 168, 46, 0.18);
+  color: var(--color-ink);
+  border: 1px solid var(--color-brine);
+}
+
+.slot-button.approved {
+  background: rgba(47, 107, 60, 0.12);
+  color: var(--color-court-green);
+  border: 1px solid var(--color-court-green);
+}
+
+.slot-button.mine-pending,
+.slot-button.mine-approved {
+  background: var(--color-court-green);
+  color: #ffffff;
+}
+
+/* =============================================================================
+   Two-column auth card (Login/Register form + illustration)
+   ========================================================================== */
+
+.auth-split {
+  display: grid;
+  grid-template-columns: minmax(280px, 400px) 1fr;
+  min-height: 320px;
+}
+
+.auth-figure-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-raised);
+  border-left: 1px solid var(--color-border);
+  padding: 2rem;
+}
+
+@media (max-width: 640px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+  }
+  .auth-figure-panel {
+    display: none;
+  }
+}

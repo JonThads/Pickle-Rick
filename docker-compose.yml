@@ -1,0 +1,77 @@
+# =============================================================================
+# Docker Compose - local development environment
+# =============================================================================
+# Run with:      docker compose up --build
+# (Deliberately NOT `-d` / detached - the Claude Instructions doc says local
+# development should NOT be headless, so you can watch all four services'
+# logs interleaved in one terminal. Open a SECOND terminal for git/npm
+# commands while this one keeps running.)
+#
+# Stop with:     Ctrl+C, then `docker compose down` to remove containers
+#                (add `-v` to also wipe the Postgres volume and start fresh).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pickle_rick
+      POSTGRES_PASSWORD: pickle_rick_pw
+      POSTGRES_DB: pickle_rick
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Postgres automatically runs any .sql file in this folder ONCE, the
+      # very first time the container starts with an empty database - this
+      # is how schema.sql creates all our tables without a manual step.
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U pickle_rick']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend-node:
+    build: ./backend-node
+    ports:
+      - '4000:4000'
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://pickle_rick:pickle_rick_pw@postgres:5432/pickle_rick
+      JWT_SECRET: local_dev_secret_change_me
+      JWT_EXPIRES_IN: 7d
+    volumes:
+      - ./backend-node:/usr/src/app
+      - /usr/src/app/node_modules # keeps the container's own node_modules (don't overwrite with host's)
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  analytics-python:
+    build: ./analytics-service-python
+    ports:
+      - '5000:5000'
+    environment:
+      DATABASE_URL: postgresql://pickle_rick:pickle_rick_pw@postgres:5432/pickle_rick
+    volumes:
+      - ./analytics-service-python:/usr/src/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '5173:5173'
+    environment:
+      VITE_API_URL: http://localhost:4000
+      VITE_ANALYTICS_URL: http://localhost:5000
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend-node
+      - analytics-python
+
+volumes:
+  pgdata:

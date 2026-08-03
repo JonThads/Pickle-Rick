@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(curl -s http://localhost:4000/health)",
+      "Bash(python \"C:\\\\Users\\\\THADDE~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Projects-pickle-rick\\\\0308f2e7-7a8f-4aa6-bf4b-ccefa450b528\\\\scratchpad\\\\smoke_test.py\")",
+      "Bash(chromium-cli --help)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command npx -ErrorAction SilentlyContinue)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5173/)"
+    ]
+  }
+}
