@@ -57,9 +57,19 @@ resolves it before guessing — it's the most detailed of the five.
   (stack must be running)
 - k6: `k6 run testing/k6/load-test.js`
 - Playwright: `cd testing/playwright && npx playwright test` (stack must
-  be running)
+  be running). Run headful, not headless — this project is also for
+  practicing automation testing, so tests should be observable, same as
+  Docker (see `docs/claude-instructions.md`).
 
 ## Git
 
 - `main` (production/demo) / `qa` (testing) / `feature/<purpose>` (all
-  local dev). Branch off `qa`, PR back into `qa`.
+  local dev).
+- Flow: branch `feature/<purpose>` off `qa` → merge into `qa` to shake out
+  bugs → merge `qa` into `main` once stable. Never develop directly on
+  `qa` or `main`.
+- No CI/CD pipeline yet, so these merges are manual for now and PRs are
+  being skipped to stay focused on building features first. Once the
+  GitHub Actions pipelines (Development/QA/Main, see
+  `docs/claude-instructions.md`) exist, merging and automated testing
+  between branches should go through them instead.
