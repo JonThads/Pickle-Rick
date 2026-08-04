@@ -40,6 +40,11 @@ resolves it before guessing — it's the most detailed of the five.
   never trust a client-supplied admin/user ID in a request body.
 - Comment code thoroughly. This project is explicitly for learning full-stack
   development — comments should explain *why*, not just *what*.
+- Default to production-grade, professional conventions in every aspect —
+  code, commit style, branch naming, security, tooling — even though this
+  is a learning project. See "Professional / Production-Grade
+  Conventions" in `docs/claude-instructions.md` for the current backlog
+  of specifics.
 
 ## Build & run
 
@@ -73,11 +78,13 @@ resolves it before guessing — it's the most detailed of the five.
 
 ## Git
 
-- `main` (production/demo) / `qa` (testing) / `feature/<purpose>` (all
-  local dev).
-- Flow: branch `feature/<purpose>` off `qa` → merge into `qa` to shake out
-  bugs → merge `qa` into `main` once stable. Never develop directly on
-  `qa` or `main`.
+- `main` (production/demo) / `qa` (testing) / prefixed branches for all
+  local dev — `feature/`, `fix/`, `test/`, `chore/`, `docs/`,
+  `refactor/`, `ci/` (see `docs/claude-instructions.md` for the full list
+  and when to use each).
+- Flow: branch `<prefix>/<purpose>` off `qa` → merge into `qa` to shake
+  out bugs → merge `qa` into `main` once stable. Never develop directly
+  on `qa` or `main`.
 - No CI/CD pipeline yet, so these merges are manual for now and PRs are
   being skipped to stay focused on building features first. Once the
   GitHub Actions pipelines (Development/QA/Main, see
