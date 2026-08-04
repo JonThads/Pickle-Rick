@@ -1,11 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import CourtCard from '../components/CourtCard.jsx';
 import CalendarPicker from '../components/CalendarPicker.jsx';
 import Avatar from '../components/Avatar.jsx';
 import PlayerSlots from '../components/PlayerSlots.jsx';
+import CourtLinePattern from '../components/CourtLinePattern.jsx';
+import PickleballWatermark from '../components/PickleballWatermark.jsx';
 import { todayKey } from '../utils/date.js';
+
+// "Approved" and "Pending" both read as wax-seal stamps; "Cancelled" reads
+// as the hazard-red stamp - same wax-seal-vs-hazard split used on the
+// Admin slot-approvals cards.
+const STAMP_CLASS = {
+  approved: 'stamp stamp-wax',
+  pending: 'stamp stamp-wax',
+  cancelled: 'stamp stamp-hazard',
+};
 
 function formatHour(hour) {
   const h = hour % 12 === 0 ? 12 : hour % 12;
@@ -201,26 +213,33 @@ export default function PlayerDashboard() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {courts.map((court) => (
+        {courts.map((court, i) => (
           <div key={court.id}>
-            <CourtCard court={court} onBook={() => handleSelectCourt(court)} />
+            <CourtCard
+              court={court}
+              onBook={() => handleSelectCourt(court)}
+              selected={selectedCourt?.id === court.id}
+              motif={i % 2 === 0 ? 'pickleball' : 'pickle'}
+            />
 
             {selectedCourt?.id === court.id && (
-              <div className="card" style={{ marginTop: '0.5rem' }}>
-                <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
-                  <button type="button" className="secondary" onClick={() => setShowCalendar((s) => !s)}>
-                    {bookingDate}
-                  </button>
-                  {showCalendar && (
-                    <CalendarPicker
-                      value={bookingDate}
-                      onSelect={setBookingDate}
-                      onClose={() => setShowCalendar(false)}
-                    />
-                  )}
-                </div>
+              <div className="card motif-card" style={{ marginTop: '0.5rem', padding: 0 }}>
+                <div style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+                  <CourtLinePattern lines="both" />
+                  <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
+                    <button type="button" className="secondary" onClick={() => setShowCalendar((s) => !s)}>
+                      {bookingDate}
+                    </button>
+                    {showCalendar && (
+                      <CalendarPicker
+                        value={bookingDate}
+                        onSelect={setBookingDate}
+                        onClose={() => setShowCalendar(false)}
+                      />
+                    )}
+                  </div>
 
-                <div className="slot-grid">
+                <div className="slot-grid" style={{ position: 'relative' }}>
                   {slots.map((slot) => {
                     const seatCount = slot.players ? slot.players.length + 1 : null; // +1 for the owner
                     return (
@@ -257,6 +276,7 @@ export default function PlayerDashboard() {
                     )}
                   </div>
                 )}
+                </div>
               </div>
             )}
           </div>
@@ -266,12 +286,13 @@ export default function PlayerDashboard() {
         )}
       </div>
 
-      <h2 style={{ marginTop: '2.5rem' }}>My bookings</h2>
+      <h2 className="section-divider" style={{ marginTop: '2.5rem', paddingTop: '2rem' }} id="my-bookings">My bookings</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {myBookingBlocks.map((block) => (
-          <div key={block.ids.join('-')} className="card" style={{ padding: '1rem' }}>
-            <span className="label-tag">{block.status}</span>
-            <p style={{ margin: '0.25rem 0' }}>
+          <div key={block.ids.join('-')} className="card motif-card" style={{ padding: '1rem' }}>
+            <PickleballWatermark size={60} opacity={0.13} />
+            <span className={STAMP_CLASS[block.status] || 'stamp stamp-wax'}>{block.status}</span>
+            <p style={{ margin: '0.5rem 0 0.35rem' }}>
               {block.court_name} · {dateOnly(block.booking_date)} · {block.hours.map(formatHour).join(' - ')}
             </p>
             <span className="label-tag">{block.hours.length} hour{block.hours.length > 1 ? 's' : ''}</span>
@@ -285,7 +306,7 @@ export default function PlayerDashboard() {
         {myBookingBlocks.length === 0 && <p style={{ color: 'var(--color-ink-muted)' }}>No bookings yet.</p>}
       </div>
 
-      <h2 style={{ marginTop: '2.5rem' }}>Incoming Pasalo requests</h2>
+      <h2 className="section-divider" style={{ marginTop: '2.5rem', paddingTop: '2rem' }} id="pasalo">Incoming Pasalo requests</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         {incoming.map((req) => (
           <div key={req.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
@@ -315,6 +336,13 @@ export default function PlayerDashboard() {
         ))}
         {outgoing.length === 0 && <p style={{ color: 'var(--color-ink-muted)' }}>You haven't asked to join anyone's booking.</p>}
       </div>
+
+      <nav className="mobile-tabbar">
+        <a className="tab active" href="#">Find</a>
+        <a className="tab" href="#my-bookings">Bookings</a>
+        <a className="tab" href="#pasalo">Pasalo</a>
+        <Link className="tab" to="/profile">Profile</Link>
+      </nav>
     </div>
   );
 }

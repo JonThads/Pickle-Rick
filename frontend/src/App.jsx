@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import PlayerDashboard from './pages/PlayerDashboard.jsx';
@@ -8,10 +8,25 @@ import AdminCourtDetail from './pages/AdminCourtDetail.jsx';
 import AdminReports from './pages/AdminReports.jsx';
 import ProfileSettings from './pages/ProfileSettings.jsx';
 import NavBar from './components/NavBar.jsx';
-import PickleFigure from './components/PickleFigure.jsx';
-import MortyFigure from './components/MortyFigure.jsx';
 import FloatingShapes from './components/FloatingShapes.jsx';
+import PaddleBallFigure from './components/PaddleBallFigure.jsx';
+import StepBadge from './components/StepBadge.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+
+const STEPS = [
+  {
+    title: 'Register a profile',
+    body: 'Sign up as a Player or an Admin. Add a photo, pick your location.',
+  },
+  {
+    title: 'Find & book a court',
+    body: 'Browse courts near you and reserve an hourly slot — auto or admin-approved.',
+  },
+  {
+    title: 'Play, or join a "Pasalo"',
+    body: 'Show up and play, or request to join an approved booking with open seats.',
+  },
+];
 
 /** Keeps logged-out visitors off pages that need a user (and vice versa isn't enforced - a logged-in admin can still browse /player, etc.). */
 function RequireAuth({ children }) {
@@ -22,29 +37,58 @@ function RequireAuth({ children }) {
 }
 
 function Home() {
+  const navigate = useNavigate();
+
   return (
-    <div className="page" style={{ position: 'relative', overflow: 'hidden', minHeight: '70vh' }}>
-      <FloatingShapes />
+    <div>
+      <section className="ledger home-hero">
+        <FloatingShapes />
 
-      <div className="float-a" style={{ position: 'absolute', right: '1rem', top: '0.5rem', opacity: 0.9 }}>
-        <MortyFigure width={150} height={210} />
-      </div>
-      <div className="float-c" style={{ position: 'absolute', right: '8.5rem', top: '3.5rem', opacity: 0.9 }}>
-        <PickleFigure width={150} height={210} />
-      </div>
-      <div className="float-b" style={{ position: 'absolute', right: '3rem', bottom: '-1rem', opacity: 0.3 }}>
-        <PickleFigure width={90} height={130} />
-      </div>
+        <div className="home-hero-copy">
+          <span className="label-tag">Specimen 01 / Court booking system</span>
+          <h1 style={{ fontSize: '3.1rem', color: 'var(--color-bg)', margin: '0.7rem 0 1.1rem', lineHeight: 1.05 }}>
+            One jar. Every court, every booking, brined to order.
+          </h1>
+          <p style={{ color: '#c7d6bc', maxWidth: 480, fontSize: '1rem', lineHeight: 1.6, margin: '0 0 1.75rem' }}>
+            Pickle Rick manages courts for Admins and books games for Players — in one app. Register as
+            a Player to find and book a court, or as an Admin to manage your own courts and track
+            revenue.
+          </p>
+          <div style={{ display: 'flex', gap: '0.9rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              style={{ background: 'var(--color-bg)', color: 'var(--color-court-green-deep)' }}
+            >
+              Find a court
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => navigate('/register')}
+              style={{ color: 'var(--color-bg)', borderColor: '#4d6b52' }}
+            >
+              I manage courts
+            </button>
+          </div>
+        </div>
 
-      <span className="label-tag">SPECIMEN 01 / COURT BOOKING SYSTEM</span>
-      <h2 style={{ fontSize: '2.4rem', marginTop: '0.5rem', maxWidth: 560, position: 'relative' }}>
-        One jar. Every court, <br /> every booking, brined to order.
-      </h2>
-      <p style={{ color: 'var(--color-ink-muted)', maxWidth: 520, position: 'relative' }}>
-        Pickle Rick manages courts for Admins and books games for Players -
-        in one app. Register as a Player to book a court, or as an Admin to
-        manage your own courts and see your revenue.
-      </p>
+        <div className="home-hero-art">
+          <PaddleBallFigure className="float-a" />
+        </div>
+      </section>
+
+      <div className="page" style={{ maxWidth: 1100 }}>
+        <div className="home-steps">
+          {STEPS.map((step, i) => (
+            <div className="card" key={step.title}>
+              <StepBadge number={i + 1} />
+              <h3 style={{ fontSize: '1.25rem', margin: '0.5rem 0' }}>{step.title}</h3>
+              <p style={{ color: 'var(--color-ink-muted)', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>{step.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

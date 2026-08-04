@@ -47,17 +47,21 @@ services:
       postgres:
         condition: service_healthy
 
-  analytics-python:
-    build: ./analytics-service-python
-    ports:
-      - '5000:5000'
-    environment:
-      DATABASE_URL: postgresql://pickle_rick:pickle_rick_pw@postgres:5432/pickle_rick
-    volumes:
-      - ./analytics-service-python:/usr/src/app
-    depends_on:
-      postgres:
-        condition: service_healthy
+  # analytics-python: commented out until analytics-service-python/ exists
+  # (no Dockerfile/app code yet, so `build:` here fails). Re-enable once
+  # that service is scaffolded on its own feature branch, and re-add
+  # "analytics-python" to frontend's depends_on below.
+  # analytics-python:
+  #   build: ./analytics-service-python
+  #   ports:
+  #     - '5000:5000'
+  #   environment:
+  #     DATABASE_URL: postgresql://pickle_rick:pickle_rick_pw@postgres:5432/pickle_rick
+  #   volumes:
+  #     - ./analytics-service-python:/usr/src/app
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
 
   frontend:
     build: ./frontend
@@ -71,7 +75,26 @@ services:
       - /usr/src/app/node_modules
     depends_on:
       - backend-node
-      - analytics-python
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      # pgAdmin validates this against real TLD rules - ".local" is a
+      # reserved/special-use domain and gets rejected, so use ".com" even
+      # though this never sends real mail.
+      PGADMIN_DEFAULT_EMAIL: admin@picklerick.com
+      PGADMIN_DEFAULT_PASSWORD: pickle_rick_pw
+      # Skips pgAdmin's own master-password prompt on every login - fine for
+      # local dev, would NOT be fine if this container were ever exposed.
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - '5050:80'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:
+  pgadmin-data:

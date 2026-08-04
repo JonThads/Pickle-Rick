@@ -2,8 +2,9 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 /**
- * Admin section nav: "Courts" (add/manage) and "Reports" (revenue) - per
- * the UI mockup's Admin Dashboard comment 1.
+ * Admin section nav: "Courts" (add/manage), "Reports" (revenue), and
+ * "Profile" (account settings) - per the UI mockup's Admin Dashboard
+ * sidebar.
  */
 export default function AdminSidebar() {
   return (
@@ -13,6 +14,9 @@ export default function AdminSidebar() {
       </NavLink>
       <NavLink to="/admin/reports" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
         Reports
+      </NavLink>
+      <NavLink to="/profile" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+        Profile
       </NavLink>
     </nav>
   );

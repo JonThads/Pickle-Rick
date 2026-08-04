@@ -61,19 +61,19 @@ export default function AdminDashboard() {
         {error && <div className="error-banner">{error}</div>}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-          {courts.map((court) => (
+          {courts.map((court, i) => (
             <div
               key={court.id}
               onClick={() => navigate(`/admin/courts/${court.id}`)}
               style={{ cursor: 'pointer' }}
             >
-              <CourtCard court={court} />
+              <CourtCard court={court} motif={i % 2 === 0 ? 'pickleball' : 'pickle'} />
             </div>
           ))}
           {courts.length === 0 && <p style={{ color: 'var(--color-ink-muted)' }}>You haven't added a court yet.</p>}
         </div>
 
-        <h2>Add a court</h2>
+        <h2 className="section-divider" style={{ paddingTop: '1.5rem' }}>Add a court</h2>
         <div className="card" style={{ marginBottom: '2rem' }}>
           <form className="form-stack" onSubmit={handleSubmit}>
             <label>

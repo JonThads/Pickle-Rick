@@ -52,41 +52,90 @@ export default function ProfileSettings() {
   if (!user) return null;
 
   return (
-    <div className="page">
+    <div className="page" style={{ maxWidth: 620 }}>
       <span className="label-tag">PROFILE SETTINGS</span>
-      <h2>Edit your profile</h2>
+      <h2>Your account</h2>
 
-      <div className="card" style={{ marginTop: '1.5rem', maxWidth: 460 }}>
-        <form className="form-stack" onSubmit={handleSubmit}>
-          {error && <div className="error-banner">{error}</div>}
-          {success && <div className="label-tag" style={{ color: 'var(--color-court-green)' }}>Saved.</div>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', margin: '1.5rem 0' }}>
+        {photoFile ? (
+          <img src={preview} alt="New profile preview" style={{ width: 88, height: 88, borderRadius: 999, objectFit: 'cover' }} />
+        ) : (
+          <Avatar name={form.fullName} photoUrl={preview} size={88} />
+        )}
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.15rem' }}>{user.full_name}</h3>
+          <span className="label-tag" style={{ textTransform: 'capitalize' }}>{user.role} · {user.location}</span>
+        </div>
+      </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {photoFile ? (
-              <img src={preview} alt="New profile preview" style={{ width: 64, height: 64, borderRadius: 999, objectFit: 'cover' }} />
-            ) : (
-              <Avatar name={form.fullName} photoUrl={preview} size={64} />
-            )}
-            <label style={{ flex: 1 }}>
+      <div className="form-stack" style={{ maxWidth: 'none', gap: '1.5rem' }}>
+        <div className="card">
+          <form className="form-stack" onSubmit={handleSubmit}>
+            {error && <div className="error-banner">{error}</div>}
+            {success && <div className="label-tag" style={{ color: 'var(--color-court-green)' }}>Saved.</div>}
+
+            <label>
               Profile picture (optional)
               <input type="file" accept="image/*" onChange={handlePhotoChange} />
             </label>
+
+            <label>
+              Full name
+              <input name="fullName" value={form.fullName} onChange={handleChange} required />
+            </label>
+
+            <label>
+              Location
+              <input name="location" value={form.location} onChange={handleChange} required />
+            </label>
+
+            <button type="submit" disabled={saving} style={{ width: 'fit-content', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+          </form>
+        </div>
+
+        {/* Password change and account deletion aren't wired up on the
+            backend yet (no PATCH /auth/me/password or DELETE /auth/me
+            route exists) - these stay visually in place per the design
+            handoff but disabled, rather than faking a call to an endpoint
+            that doesn't exist. */}
+        <div className="card">
+          <h4 style={{ margin: '0 0 0.9rem' }}>Change password</h4>
+          <form className="form-stack">
+            <label>
+              New password
+              <input type="password" disabled placeholder="Coming soon" />
+            </label>
+            <button type="button" className="secondary" disabled style={{ width: 'fit-content', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+              Update password
+            </button>
+          </form>
+        </div>
+
+        <div
+          style={{
+            border: '1px solid var(--color-hazard)',
+            borderRadius: 'var(--radius-jar)',
+            padding: '1.5rem',
+            background: 'rgba(181, 72, 43, 0.06)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <h4 style={{ margin: '0 0 0.25rem', color: 'var(--color-hazard)' }}>Delete account</h4>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-ink-muted)' }}>
+              This cancels all bookings and cannot be undone.
+            </p>
           </div>
-
-          <label>
-            Full name
-            <input name="fullName" value={form.fullName} onChange={handleChange} required />
-          </label>
-
-          <label>
-            Location
-            <input name="location" value={form.location} onChange={handleChange} required />
-          </label>
-
-          <button type="submit" disabled={saving}>
-            {saving ? 'Saving…' : 'Save changes'}
+          <button type="button" className="danger" disabled title="Coming soon">
+            Delete
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

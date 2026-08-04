@@ -60,6 +60,16 @@ resolves it before guessing — it's the most detailed of the five.
   be running). Run headful, not headless — this project is also for
   practicing automation testing, so tests should be observable, same as
   Docker (see `docs/claude-instructions.md`).
+- **Clean up test data after every run** — Smoke/Sanity (Postman), Load
+  (k6), and E2E (Playwright) alike. Any rows a test suite creates (test
+  users, bookings, orders, etc.) must be deleted once the run finishes,
+  so the dev database only ever holds data someone intentionally entered.
+  Prefer teardown built into the suite itself (Postman: a cleanup request
+  at the end of the collection/folder; Playwright: `afterEach`/`afterAll`
+  hooks; k6: a `teardown()` function) over relying on someone remembering
+  to clean up by hand. If a full wipe is ever simpler than tracking what
+  a run created, `docker compose down -v` then `up --build` resets the
+  database to a blank slate (re-runs `db/schema.sql`).
 
 ## Git
 

@@ -1,4 +1,7 @@
 import React from 'react';
+import CourtLinePattern from './CourtLinePattern.jsx';
+import PickleballWatermark from './PickleballWatermark.jsx';
+import PickleWatermark from './PickleWatermark.jsx';
 
 /**
  * The "brine gauge" is this project's one signature visual element: a
@@ -38,9 +41,19 @@ function BrineGauge({ bookedHours, totalHours }) {
   );
 }
 
-export default function CourtCard({ court, bookedHours = 0, totalHours = 12, onBook }) {
+/**
+ * `motif`: which corner watermark this card wears - alternate 'pickleball'
+ * / 'pickle' across a list for visual variety, matching the mockup's court
+ * list and admin court list.
+ * `selected`: when true and `onBook` is set, shows a "Selected" stamp
+ * instead of the Book button (the mockup's expanded-court state).
+ */
+export default function CourtCard({ court, bookedHours = 0, totalHours = 12, onBook, motif = 'pickleball', selected = false }) {
   return (
-    <div className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+    <div className="card motif-card" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      {motif === 'pickle' ? <PickleWatermark size={60} rotation={14} opacity={0.12} corner="top-right" /> : <CourtLinePattern />}
+      {motif === 'pickleball' && <PickleballWatermark />}
+
       <BrineGauge bookedHours={bookedHours} totalHours={totalHours} />
 
       <div style={{ flex: 1 }}>
@@ -55,7 +68,16 @@ export default function CourtCard({ court, bookedHours = 0, totalHours = 12, onB
         </p>
       </div>
 
-      {onBook && <button onClick={() => onBook(court)}>Book</button>}
+      {onBook && (selected ? (
+        <span
+          className="label-tag"
+          style={{ background: 'var(--color-court-green)', color: '#fff', padding: '0.5em 1.1em', borderRadius: 999 }}
+        >
+          Selected
+        </span>
+      ) : (
+        <button onClick={() => onBook(court)}>Book</button>
+      ))}
     </div>
   );
 }

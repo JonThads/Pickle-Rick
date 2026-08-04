@@ -47,6 +47,13 @@ code merge.
   development, in the same spirit — the point is to practice and observe
   automation testing, not just get a pass/fail result.
 
+## Testing
+
+- All test types — Smoke/Sanity (Postman), Load (k6), and E2E
+  (Playwright) — must clean up any data they create (test users,
+  bookings, orders, etc.) once the run finishes. The dev database should
+  only ever contain data someone put there on purpose.
+
 ## Tech Stack
 
 - Node.JS

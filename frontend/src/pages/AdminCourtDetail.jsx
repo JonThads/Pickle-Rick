@@ -1,10 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api/client.js';
 import AdminSidebar from '../components/AdminSidebar.jsx';
 import Avatar from '../components/Avatar.jsx';
 import PlayerSlots from '../components/PlayerSlots.jsx';
 import CalendarPicker from '../components/CalendarPicker.jsx';
+import PickleballWatermark from '../components/PickleballWatermark.jsx';
+import PickleWatermark from '../components/PickleWatermark.jsx';
 import { todayKey } from '../utils/date.js';
 
 function formatHour(hour) {
@@ -27,6 +29,12 @@ export default function AdminCourtDetail() {
   const [items, setItems] = useState([]);
   const [itemForm, setItemForm] = useState({ name: '', quantity: '', pricePhp: '', details: '' });
   const [error, setError] = useState(null);
+  const itemNameRef = useRef(null);
+
+  function focusAddItemForm() {
+    itemNameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    itemNameRef.current?.focus();
+  }
 
   useEffect(() => {
     api
@@ -157,18 +165,21 @@ export default function AdminCourtDetail() {
           <p style={{ color: 'var(--color-ink-muted)' }}>No bookings for this date.</p>
         )}
 
-        {slotsByHour.map(([hour, slotBookings]) => {
+        {slotsByHour.map(([hour, slotBookings], i) => {
           const approved = slotBookings.find((b) => b.status === 'approved');
           const isExpanded = expandedHour === hour;
 
           return (
-            <div className="accordion-item" key={hour}>
+            <div className="accordion-item motif-card" key={hour}>
+              {i % 2 === 0 ? <PickleballWatermark size={78} opacity={0.1} /> : <PickleWatermark size={26} opacity={0.15} corner="top-right" />}
               <button type="button" className="accordion-header" onClick={() => setExpandedHour(isExpanded ? null : hour)}>
                 <span>
                   {formatHour(hour)}–{formatHour((hour + 1) % 24)}
                   {approved ? ` · ${approved.owner_name}` : ` · ${slotBookings.length} pending request(s)`}
                 </span>
-                <span className="label-tag">{isExpanded ? 'Hide' : 'Show'}</span>
+                <span className={approved ? 'stamp stamp-flat stamp-court' : 'stamp stamp-flat stamp-wax'}>
+                  {approved ? 'Booked' : 'Pending'}
+                </span>
               </button>
 
               {isExpanded && (
@@ -215,33 +226,40 @@ export default function AdminCourtDetail() {
           );
         })}
 
-        <h3 style={{ marginTop: '2.5rem' }}>Inventory</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
-          {items.map((item) => (
-            <div key={item.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <strong>{item.name}</strong>
-                <p className="label-tag" style={{ margin: '0.2rem 0 0' }}>₱{Number(item.price_php).toFixed(2)}</p>
+        <h3 className="section-divider" style={{ marginTop: '2.5rem', paddingTop: '2rem' }}>Inventory</h3>
+        <div className="inventory-grid" style={{ marginBottom: '1.5rem' }}>
+          {items.map((item, i) => (
+            <div key={item.id} className="card motif-card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="item-photo-slot" style={item.photo_url ? { backgroundImage: `url(${item.photo_url})` } : undefined}>
+                {!item.photo_url && 'Item photo'}
               </div>
-              <label style={{ width: 90 }}>
-                <input
-                  type="number"
-                  min="0"
-                  value={item.quantity}
-                  onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
-                />
-              </label>
-              <button type="button" className="danger" onClick={() => handleDeleteItem(item.id)}>Remove</button>
+              <div style={{ padding: '0.75rem', position: 'relative' }}>
+                {i % 2 === 0 ? <PickleWatermark size={40} opacity={0.14} corner="bottom-right" /> : <PickleballWatermark size={56} opacity={0.15} />}
+                <strong style={{ fontSize: '0.9rem' }}>{item.name}</strong>
+                <p className="label-tag" style={{ margin: '0.2rem 0 0.6rem' }}>₱{Number(item.price_php).toFixed(2)} · Qty {item.quantity}</p>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    style={{ width: 70 }}
+                    value={item.quantity}
+                    onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
+                  />
+                  <button type="button" className="danger" style={{ padding: '0.5em 0.9em', fontSize: '0.8rem' }} onClick={() => handleDeleteItem(item.id)}>
+                    Remove
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
-          {items.length === 0 && <p style={{ color: 'var(--color-ink-muted)' }}>No items yet.</p>}
+          <button type="button" className="add-item-tile" onClick={focusAddItemForm}>+ Add item</button>
         </div>
 
         <div className="card" style={{ maxWidth: 420 }}>
           <form className="form-stack" onSubmit={handleAddItem}>
             <label>
               Item name
-              <input name="name" value={itemForm.name} onChange={(e) => setItemForm((f) => ({ ...f, name: e.target.value }))} required />
+              <input ref={itemNameRef} name="name" value={itemForm.name} onChange={(e) => setItemForm((f) => ({ ...f, name: e.target.value }))} required />
             </label>
             <label>
               Quantity
