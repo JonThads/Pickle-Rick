@@ -24,6 +24,11 @@ npm-debug.log*
 playwright-report/
 test-results/
 
+# Playwright test credentials - real accounts/passwords used by specs,
+# never committed. See testing/playwright/credentials.example.json for
+# the expected shape.
+testing/playwright/credentials.json
+
 # User-uploaded files (local dev only - never commit real uploads)
 backend-node/uploads/*
 !backend-node/uploads/.gitkeep
