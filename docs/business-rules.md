@@ -14,10 +14,15 @@
 - Players can only see and book Courts that are in their location. Example:
   Player A's location is Davao, so only Courts from Davao can appear in
   their selection.
+- Only one player can request a booking for a specific hour timeslot, day,
+  and Manually Approved Court. Any succeeding players who attempt to
+  request that same booking are not allowed to.
 
 ## Admin Rules
 
 - Admins can add multiple courts that they manage.
+- Admins can only add one court with a given Court Name — the same Admin
+  cannot register two courts under the same name.
 - Admins have the authority to approve bookings made on their court (for
   Manual Approval Courts).
 - Admins can change inventory per Court.
