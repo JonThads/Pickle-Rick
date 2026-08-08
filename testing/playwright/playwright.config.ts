@@ -19,8 +19,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* One worker, always.
+     The default (half the logical CPUs) launches several browsers at once,
+     and because this suite runs HEADED (see `headless: false` below) that
+     means several real browser windows competing with the Docker stack for
+     CPU and RAM. On a constrained machine the Vite dev server and the
+     browser content processes starve: page loads stretch past 10s and
+     dispatched clicks never get processed, so tests fail on the 30s timeout
+     with no defect behind it. Serial is also the only way the run is
+     actually watchable, which is the point of running headed here. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -34,6 +42,9 @@ export default defineConfig({
     /* Run headful by default — practicing/observing automation is the point of this
        project's Playwright suite, not just a pass/fail result (see docs/claude-instructions.md). */
     headless: false,
+
+    /* Screenshots */
+    screenshot: { mode: 'on', fullPage: true },
   },
 
   /* Configure projects for major browsers */

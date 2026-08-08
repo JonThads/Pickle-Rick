@@ -23,6 +23,7 @@ npm-debug.log*
 # Test artifacts
 playwright-report/
 test-results/
+testing/playwright/screenshots/
 
 # Playwright test credentials - real accounts/passwords used by specs,
 # never committed. See testing/playwright/credentials.example.json for
