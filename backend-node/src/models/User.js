@@ -92,7 +92,8 @@ async function updateUser(id, { fullName, location, photoUrl } = {}) {
 
 /**
  * Permanently delete a user and everything that belongs to them.
- * (BRD "Business Processes": Login, Registration, and Account Deletion.)
+ * BR-08, FR-12, UC-06 - see "Account Deletion Rules" in the Business Rules
+ * doc for the exact cascade this implements.
  *
  * Why this is hand-written instead of a single `DELETE FROM users`:
  *

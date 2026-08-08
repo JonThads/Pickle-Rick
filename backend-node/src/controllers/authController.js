@@ -1,7 +1,7 @@
 // =============================================================================
 // Auth controller
 // =============================================================================
-// Covers BR-01, BR-02, FR-01, FR-11, UC-01, UC-02
+// Covers BR-01, BR-02, BR-08, FR-01, FR-11, FR-12, UC-01, UC-02, UC-06
 
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
@@ -145,7 +145,8 @@ async function me(req, res, next) {
 
 /**
  * DELETE /api/auth/me
- * BRD "Business Processes": Login, Registration, and Account Deletion.
+ * BR-08, FR-12, UC-06. Cascade behaviour is specified in the Business Rules
+ * doc under "Account Deletion Rules".
  *
  * Deletes the CURRENTLY AUTHENTICATED user - the id comes from the verified
  * JWT, never from the request body, so nobody can delete someone else's

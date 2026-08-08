@@ -65,6 +65,7 @@ This project is only for local deployment.
 | FR-09 | The Admin Dashboard should indicate the admin's Total Revenue of all of its courts per month. |
 | FR-10 | Admins should have an Inventory Page where they can add, remove, and update quantities of items. |
 | FR-11 | Users should be able to log out of the program. |
+| FR-12 | Users should be able to permanently delete their own account. Deletion requires re-entering the account password, and removes every record that belongs to that user (see the Account Deletion Rules in the Business Rules document for exactly what "belongs to" covers). |
 
 ## Non-Functional Requirements
 
