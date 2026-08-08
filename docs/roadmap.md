@@ -36,6 +36,7 @@ don't let it drift out of sync with reality the way the "5 docs" can't
   inventory management UI
 - [x] Profile Settings (edit profile, photo)
 - [x] Logout (NavBar / AuthContext)
+- [x] Account deletion in Profile Settings (BR-08, FR-12, UC-06)
 - [x] Nav/sidebar shell, Rick & Morty-inspired visual theme ("UI Revamp"
   commit)
 
@@ -58,9 +59,7 @@ don't let it drift out of sync with reality the way the "5 docs" can't
   Hard delete, password re-confirmed, transactional, deletes child rows
   before parents so `order_items`' `ON DELETE RESTRICT` can't abort the
   cascade. Cascade behaviour is now written down in the Business Rules doc
-  under "Account Deletion Rules". **Frontend still pending**: the "Delete
-  account" button in `ProfileSettings.jsx` remains `disabled` — the branch
-  was backend-only, so wiring the button up is still to do.
+  under "Account Deletion Rules". Frontend is wired up too — see below.
 - [ ] **Potential revenue** data isn't exposed anywhere yet (BRD Key
   Metric: "Potential Revenue based on a month's current and advanced
   bookings") — likely lives in analytics-python once that exists, but
@@ -88,9 +87,10 @@ effectively pre-agreed. Needs:
 - [ ] Player order history / pickup status
 - [ ] Wire up `AdminReports.jsx` to real data once analytics-python exists
   (currently a "Coming soon" placeholder — intentionally not faked)
-- [ ] Enable the "Delete account" button — **now unblocked**, the backend
-  route exists (`DELETE /api/auth/me`). Needs a password-confirmation
-  prompt and a logout-and-redirect on success (UC-06)
+- [x] "Delete account" in Profile Settings (UC-06) — two-step confirm with
+  a password re-prompt, role-specific warning copy (an Admin is told their
+  courts and other players' bookings go too), then logout and redirect to
+  the landing page
 
 ### Testing — nothing exists yet
 `testing/` isn't in the repo at all, despite being referenced throughout
@@ -124,10 +124,9 @@ everything built before it:
 1. **Close out BR-07** (purchasing/checkout backend + player shop/cart
    UI) — the last unbuilt *functional* requirement, and the schema is
    already there waiting.
-2. ~~**Account deletion**~~ — backend done (`feature/account-deletion`).
-   What remains is the frontend: enable the "Delete account" button in
-   `ProfileSettings.jsx`, prompt for the password, and log the user out on
-   success.
+2. ~~**Account deletion**~~ — done, backend and frontend
+   (`feature/account-deletion`, `feature/delete-account-ui`). Closes out
+   the last BRD business process.
 3. **`analytics-service-python`** — decide the profit data model first
    (needs a schema change), then build the FastAPI service, then
    re-enable it in `docker-compose.yml` and wire `AdminReports.jsx`.
