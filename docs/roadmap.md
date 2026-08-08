@@ -54,10 +54,13 @@ don't let it drift out of sync with reality the way the "5 docs" can't
   `schema.sql` — no controller, model, or routes consume them yet. Needs
   cart→order flow, stock decrement against `items.quantity`, and an order
   status transition (`placed` → `picked_up` / `cancelled`).
-- [ ] **Account deletion** (BRD Business Process). Frontend already has a
-  disabled "Delete account" button in `ProfileSettings.jsx` — no
-  `DELETE /api/auth/me` route exists behind it. Needs a decision on
-  cascade behavior (cancel bookings first, per the UI's own copy).
+- [x] **Account deletion** — `DELETE /api/auth/me` (BR-08, FR-12, UC-06).
+  Hard delete, password re-confirmed, transactional, deletes child rows
+  before parents so `order_items`' `ON DELETE RESTRICT` can't abort the
+  cascade. Cascade behaviour is now written down in the Business Rules doc
+  under "Account Deletion Rules". **Frontend still pending**: the "Delete
+  account" button in `ProfileSettings.jsx` remains `disabled` — the branch
+  was backend-only, so wiring the button up is still to do.
 - [ ] **Potential revenue** data isn't exposed anywhere yet (BRD Key
   Metric: "Potential Revenue based on a month's current and advanced
   bookings") — likely lives in analytics-python once that exists, but
@@ -85,7 +88,9 @@ effectively pre-agreed. Needs:
 - [ ] Player order history / pickup status
 - [ ] Wire up `AdminReports.jsx` to real data once analytics-python exists
   (currently a "Coming soon" placeholder — intentionally not faked)
-- [ ] Enable the "Delete account" button once the backend route exists
+- [ ] Enable the "Delete account" button — **now unblocked**, the backend
+  route exists (`DELETE /api/auth/me`). Needs a password-confirmation
+  prompt and a logout-and-redirect on success (UC-06)
 
 ### Testing — nothing exists yet
 `testing/` isn't in the repo at all, despite being referenced throughout
@@ -119,8 +124,10 @@ everything built before it:
 1. **Close out BR-07** (purchasing/checkout backend + player shop/cart
    UI) — the last unbuilt *functional* requirement, and the schema is
    already there waiting.
-2. **Account deletion** — small, self-contained, closes out the last BRD
-   business process.
+2. ~~**Account deletion**~~ — backend done (`feature/account-deletion`).
+   What remains is the frontend: enable the "Delete account" button in
+   `ProfileSettings.jsx`, prompt for the password, and log the user out on
+   success.
 3. **`analytics-service-python`** — decide the profit data model first
    (needs a schema change), then build the FastAPI service, then
    re-enable it in `docker-compose.yml` and wire `AdminReports.jsx`.

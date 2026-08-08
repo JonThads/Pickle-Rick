@@ -40,6 +40,38 @@
 
 - Players can only purchase items that are available on a specific court.
 
+## Account Deletion Rules
+
+- A user can only delete their own account. There is no way for one user
+  to delete another's, and no admin override.
+- Deletion requires re-entering the account password, even though the user
+  is already logged in. A logged-in session alone is not enough authority
+  to destroy an account permanently.
+- Deletion is permanent and immediate. There is no soft delete, no grace
+  period, and no recovery — this matches what the "Delete account" panel
+  in Profile Settings tells the user: *"This cancels all bookings and
+  cannot be undone."*
+- Deleting a **Player** removes their bookings, their "Pasalo" join
+  requests, and their orders. Time slots those bookings occupied become
+  free for other Players again.
+- Deleting an **Admin** removes every Court they manage, and therefore
+  also removes the inventory, bookings, and orders on those Courts —
+  *including other Players' bookings*. An Admin deleting their account
+  cancels other people's games, which is why the password re-prompt
+  applies here especially.
+- A deleted account's email address becomes available for registration
+  again, since no record of the old account is kept.
+- Any access token issued before deletion stops working the moment the
+  account is gone, even if that token has not expired yet.
+
+> Trade-off on record: because deletion is permanent, a deleted user's
+> past bookings and orders no longer contribute to the Revenue/Profit
+> metrics in the BRD. This is accepted for now — no purchasing endpoints
+> or analytics service exist yet, so there is no revenue history to lose.
+> Revisit this when `analytics-service-python` is built: preserving
+> financial history across account deletion normally means anonymising the
+> user rather than deleting the rows.
+
 ## UI Rules
 
 - The UI should be intuitive, professional-looking, but artistic, since

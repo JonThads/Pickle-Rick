@@ -34,6 +34,7 @@ profit for each court that they manage.
 | BR-05 | The system must have a list of all courts managed by a specific admin | High |
 | BR-06 | The system must have a "My Bookings" page for each User to let the User know on what games they are booked to | High |
 | BR-07 | The system must have a shop and inventory for each court, where users can add items to their cart, purchase in advance, and pick up purchased items at the court they ordered from. | Med |
+| BR-08 | The system must let a Player or Admin permanently delete their own account, removing the data that belongs to them. | Med |
 
 ## Key Metrics
 
