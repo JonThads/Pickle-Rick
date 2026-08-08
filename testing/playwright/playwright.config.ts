@@ -34,6 +34,9 @@ export default defineConfig({
     /* Run headful by default — practicing/observing automation is the point of this
        project's Playwright suite, not just a pass/fail result (see docs/claude-instructions.md). */
     headless: false,
+
+    /* Screenshots */
+    screenshot: { mode: 'on', fullPage: true },
   },
 
   /* Configure projects for major browsers */
