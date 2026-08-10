@@ -1,0 +1,57 @@
+{
+  "info": {
+    "_postman_id": "b6f1a2d4-7c3e-4b1a-9f2d-1e4a6c8b0d3f",
+    "name": "Pickle Rick",
+    "description": "Smoke/sanity suite for the Pickle Rick API (backend-node). Folders mirror the sheets in testing/test-cases/Pickle Rick Test Cases.xlsx so automated coverage stays traceable to a Ref No, per docs/claude-instructions.md. This scaffold ships with every folder empty on purpose - see docs/specs/2026-08-08-postman-newman-scaffolding-design.md D7. Requests are added on later branches.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Mint a single runId for this run and reuse it for every request.",
+          "// Every test account this suite ever creates is addressed as",
+          "// pm-{{runId}}-<role>@picklerick.test, which is what lets teardown.js",
+          "// delete exactly (and only) what this suite created.",
+          "// See docs/specs/2026-08-08-postman-newman-scaffolding-design.md D3.",
+          "if (!pm.collectionVariables.get('runId')) {",
+          "    const runId = pm.variables.replaceIn('{{$randomUUID}}').split('-')[0];",
+          "    pm.collectionVariables.set('runId', runId);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "runId",
+      "value": "",
+      "description": "Minted once per run by the collection-level pre-request script. Do not set by hand."
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "description": "Captured from a login/register response and reused as a Bearer token. Never persisted outside a run - see D8."
+    },
+    {
+      "key": "courtId",
+      "value": "",
+      "description": "Captured from a court-creation response for reuse by later requests in the same run."
+    },
+    {
+      "key": "bookingId",
+      "value": "",
+      "description": "Captured from a booking-creation response for reuse by later requests in the same run."
+    }
+  ],
+  "item": [
+    { "name": "Smoke", "item": [] },
+    { "name": "Auth", "item": [] },
+    { "name": "Court Management", "item": [] },
+    { "name": "Player Bookings", "item": [] },
+    { "name": "Booking Acceptance", "item": [] },
+    { "name": "Pasalo", "item": [] }
+  ]
+}

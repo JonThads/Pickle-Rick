@@ -58,7 +58,7 @@ resolves it before guessing — it's the most detailed of the five.
 
 ## Testing
 
-- Postman: `newman run testing/postman/PickleRick.postman_collection.json`
+- Postman: `cd testing/postman && npm test`
   (stack must be running)
 - k6: `k6 run testing/k6/load-test.js`
 - Playwright: `cd testing/playwright && npx playwright test` (stack must

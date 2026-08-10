@@ -1,0 +1,13 @@
+{
+    "name": "pickle-rick-postman",
+    "private": true,
+    "scripts": {
+        "test": "node scripts/run.js",
+        "teardown": "node scripts/teardown.js"
+    },
+
+    "devDependencies": {
+        "newman": "^6.2.2",
+        "newman-reporter-htmlextra": "1.x"
+    }
+}
