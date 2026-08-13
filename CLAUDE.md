@@ -19,6 +19,11 @@ See `README.md` for the full architecture writeup and setup instructions.
 If a requirement is ambiguous, check whether the Business Rules doc
 resolves it before guessing — it's the most detailed of the five.
 
+## Roadmap - overall direction of the Pickle Rick Project
+
+@docs/roadmap.md
+@docs/project-plan-verview.md
+
 ## Architecture (see README.md § 2 for the full rationale)
 
 - `backend-node/` — Express REST API, source of truth (writes). Auth,
@@ -45,6 +50,17 @@ resolves it before guessing — it's the most detailed of the five.
   is a learning project. See "Professional / Production-Grade
   Conventions" in `docs/claude-instructions.md` for the current backlog
   of specifics.
+
+- **Coding Convention**
+- Example Code Snippet:
+
+- Simple Code Comment
+- {
+- 
+-  Code
+-  Snippet
+- 
+- }
 
 ## Build & run
 
