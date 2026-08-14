@@ -1,0 +1,185 @@
+# =============================================================================
+# Reusable workflow: full automated test suite (Postman + Playwright)
+# =============================================================================
+# Shared by qa.yml and main.yml so both pipelines stand up the exact same
+# Docker stack and run the exact same suites - see PR-46/PR-47 in Jira and
+# docs/claude-instructions.md §GitHub §Actions. Kept as `workflow_call`
+# rather than copy-pasted into both files so a change to "how we stand up
+# the stack" only has to happen once.
+#
+# NOT triggered directly - only invoked via `uses:` from another workflow.
+
+name: Full Test Suite (Postman + Playwright)
+
+on:
+  workflow_call:
+    inputs:
+      run_k6:
+        description: >-
+          Run the k6 smoke test against thresholds (Main pipeline only -
+          PR-47 scope. QA pipeline does not run k6, per PR-46 scope).
+        type: boolean
+        default: false
+      deploy_pages:
+        description: >-
+          Publish the Playwright HTML report to GitHub Pages after the
+          suite passes (PR-70). Only true on `push` events (post-merge) -
+          never on `pull_request`, so Pages always reflects the last
+          known-good `qa`/`main` state, not in-review work.
+        type: boolean
+        default: false
+
+jobs:
+  test:
+    name: Postman + Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Test fixtures ----------------------------------------------------
+      # Both files are gitignored on purpose (.gitignore) because they're
+      # the shape a contributor fills in with their own local values. The
+      # *.example.json versions committed alongside them use dummy,
+      # non-secret data (localhost URLs, "changeme" passwords for accounts
+      # this suite itself creates/tears down) - see testing/postman/README.md
+      # and testing/playwright/credentials.example.json - so a plain copy is
+      # correct here and does NOT need a GitHub Secret.
+      - name: Provision Postman environment from example
+        run: cp testing/postman/environments/local.postman_environment.example.json testing/postman/environments/local.postman_environment.json
+
+      - name: Provision Playwright credentials from example
+        run: cp testing/playwright/credentials.example.json testing/playwright/credentials.json
+
+      # --- Stack --------------------------------------------------------------
+      # Deliberately `docker compose up --build -d` (detached), NOT the
+      # non-detached local-dev invocation docs/claude-instructions.md
+      # describes. That policy is about a human watching logs on their own
+      # machine; a GitHub-hosted runner has no one watching a terminal, so
+      # detached is correct here - the same reasoning that makes
+      # `headless: true` correct for Playwright in CI below, despite the
+      # local headful policy.
+      - name: Start the stack (docker compose)
+        run: docker compose up --build -d
+
+      # No fixed `sleep` (PR-46 acceptance criterion) - poll `/health` and
+      # the Vite dev server's root instead, bounded by an overall timeout
+      # so a stack that never comes up fails fast instead of hanging until
+      # the job-level timeout.
+      - name: Wait for backend-node to be healthy
+        run: timeout 90 bash -c 'until curl -sf http://localhost:4000/health; do echo "waiting for backend-node..."; sleep 2; done'
+
+      - name: Wait for frontend to be reachable
+        run: timeout 90 bash -c 'until curl -sf http://localhost:5173; do echo "waiting for frontend..."; sleep 2; done'
+
+      # --- Postman / Newman -----------------------------------------------
+      - name: Install Postman suite dependencies
+        working-directory: testing/postman
+        run: npm ci
+
+      # `npm test` (scripts/run.js) drives Newman through its Node API so
+      # teardown always runs in a `finally` block - pass, assertion
+      # failure, or thrown exception alike (see
+      # docs/specs/2026-08-08-postman-newman-scaffolding-design.md D6).
+      # Nothing extra is needed here for "clean up test data after every
+      # run" - it's already built into the suite.
+      - name: Run Postman/Newman suite (with built-in teardown)
+        working-directory: testing/postman
+        run: npm test
+
+      - name: Upload Newman HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: testing/postman/newman/report.html
+          retention-days: 14
+
+      # --- Playwright ---------------------------------------------------------
+      - name: Install Playwright suite dependencies
+        working-directory: testing/playwright
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: testing/playwright
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      # ⚠️ Prerequisite this workflow assumes, not yet done: playwright.config.ts
+      # currently hardcodes `headless: false` unconditionally, because
+      # project policy (docs/claude-instructions.md §Environment) is to run
+      # Playwright headful LOCALLY so automation stays observable. PR-46's
+      # own description says headless in CI does not violate that policy -
+      # CI has no display to watch. `forbidOnly`/`retries` in that same
+      # config file already branch on `process.env.CI`; `headless` needs
+      # the same one-line treatment:
+      #     headless: !!process.env.CI
+      # GitHub Actions sets CI=true on every run automatically, so once
+      # that line lands in playwright.config.ts, no further change is
+      # needed here.
+      - name: Run Playwright Suite (headless in CI)
+        working-directory: testing/playwright
+        env:
+          CI: true
+        run: npx playwright test
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: testing/playwright/playwright-report
+          retention-days: 14
+
+      # --- k6 (Main pipeline only) -------------------------------------------
+      - name: Set up k6
+        if: inputs.run_k6
+        uses: grafana/setup-k6-action@v1
+
+      # smoke-test.js's own `thresholds: { http_req_failed: ['rate==0'] }`
+      # makes `k6 run` exit non-zero on breach - no extra flag needed for
+      # this step to fail the job correctly.
+      - name: Run k6 Smoke Test
+        if: inputs.run_k6
+        run: k6 run testing/k6/smoke-test.js
+
+      # --- Cleanup --------------------------------------------------------------
+      # Always tear the stack down, pass or fail, so a failed run doesn't
+      # leave state behind.
+      - name: Tear down the stack
+        if: always()
+        run: docker compose down -v
+
+  publish-report:
+    name: Publish Playwright Report to GitHub Pages
+    needs: test
+    if: inputs.deploy_pages
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Recommended by GitHub for Pages deploy jobs: only one deployment in
+    # flight at a time, and don't cancel one mid-flight (a half-published
+    # report is worse than a slightly stale one).
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      # Re-download the artifact the `test` job already produced rather
+      # than re-running the suite a second time just to get the report.
+      - uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: testing/playwright/playwright-report
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: testing/playwright/playwright-report
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

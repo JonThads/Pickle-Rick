@@ -1,0 +1,33 @@
+# =============================================================================
+# QA pipeline - the real gate before anything merges into `qa`
+# =============================================================================
+# Jira: PR-46. Runs the full automated suite (Postman + Playwright) against
+# a live `docker compose` stack - see docs/claude-instructions.md
+# §GitHub §Actions and CLAUDE.md §Testing.
+#
+# Two triggers, two different jobs of work from the same reusable suite:
+#   - pull_request into qa   -> gate the merge. No Pages deploy: a PR under
+#     review has not merged yet, so it must not become the "last known-good"
+#     report a portfolio reviewer sees (PR-70).
+#   - push to qa (i.e. a PR just merged) -> re-run the suite against qa's
+#     new HEAD and publish that report to GitHub Pages.
+
+name: QA
+
+on:
+    pull_request:
+        branches: [qa]
+    push:
+        branches: [qa]
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+jobs:
+    suite:
+        uses: ./.github/workflows/_reusable-full-suite.yml
+        with:
+            run_k6: false
+            deploy_pages: ${{ github.event_name == 'push' }}

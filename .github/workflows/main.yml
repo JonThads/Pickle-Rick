@@ -1,0 +1,93 @@
+# =============================================================================
+# Main pipeline - full gate before production merge
+# =============================================================================
+# Jira: PR-47. Everything the QA pipeline runs, plus a k6 smoke run against
+# thresholds, a secrets scan over the diff, and a Docker image build check -
+# see docs/claude-instructions.md §GitHub §Actions and CLAUDE.md §Git
+# ("qa -> main once stable").
+#
+# Same pull_request / push split as qa.yml, for the same reason (PR-70):
+# only a merge into `main` should ever become the publicly-deployed report.
+#
+# Deliberately NOT included: an actual deploy step. `main` is
+# production/demo (SRS §Scope) but nothing is hosted yet, so an automatic
+# deploy here would just be a step that always fails with nothing to point
+# at. That's the Cloud Deployment epic's job, as a separate, explicitly
+# triggered workflow - see PR-47's "Note on deployment".
+#
+# Also out of scope for YAML alone: branch protection on `main` requiring
+# this check to pass (PR-47 acceptance criterion) is a repo Settings
+# change, not something a workflow file can express - set it once under
+# Settings > Branches > Branch protection rules.
+
+name: Main
+
+on:
+    pull_request:
+        branches: [main]
+    push:
+        branches: [main]
+    workflow_dispatch:
+        inputs:
+            tag_release:
+                description: 'Git Tag Creation and Push after this run'
+                type: boolean
+                default: false
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+jobs:
+    suite:
+        uses: ./.github/workflows/_reusable-full-suite.yml
+        with:
+            run_k6: true
+            deploy_pages: ${{ github.event_name == 'push' }}
+
+    build-images:
+        name: Build production Docker images
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            
+            - name: Build backend-node image
+              run: docker build -t pickle-rick-backend:ci ./backend-node
+
+            - name: Build frontend image
+              run: docker build -t pickle-rick-frontend:ci ./frontend
+
+    secrets-scan:
+        name: Secrets scan diff
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+
+            - name: Gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # "Optionally tag a release" (PR-47 scope). Manual only - run it from the
+    # Actions tab (Run workflow, tick tag_release) once main is in a state
+    # worth tagging.
+
+    tag-release:
+        name: Release Tag
+        needs: [suite, build-images, secrets-scan]
+        if: github.event_name == 'workflow_dispatch' && inputs.tag_release
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Git Tag Creation and Push
+              run: |
+                git config user.name "github-actions[bot]"
+                git config user.email "github-actions[bot]@users.noreply.github.com"
+                TAG="v$(date +%Y.%m.%d)-${GITHUB_SHA::7}"
+                git tag "$TAG"
+                git push origin "$TAG"
