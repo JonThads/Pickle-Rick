@@ -1,7 +1,7 @@
 // =============================================================================
 // Auth controller
 // =============================================================================
-// Covers BR-01, BR-02, FR-01, FR-11, UC-01, UC-02
+// Covers BR-01, BR-02, BR-08, FR-01, FR-11, FR-12, UC-01, UC-02, UC-06
 
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
@@ -126,10 +126,83 @@ async function login(req, res, next) {
 async function me(req, res, next) {
     try {
         const user = await User.findUserById(req.user.id);
+
+        // A signed token outlives the account it points at: JWTs are stateless,
+        // so deleting a user (DELETE /me) can't revoke tokens already issued to
+        // them. Without this guard the endpoint answers 200 {"user": null},
+        // which reads as "logged in" to the frontend and leaves a ghost session
+        // that can't be clicked out of. 401 is what AuthContext already treats
+        // as "log out", so a deleted account resolves itself on next page load.
+        if (!user) {
+            return res.status(401).json({ error: 'Account no longer exists' });
+        }
+
         res.json({ user });
     } catch (err) {
         next(err);
     }
 }
 
-module.exports = { register, login, me, updateMe, uploadPhoto };
+/**
+ * DELETE /api/auth/me
+ * BR-08, FR-12, UC-06. Cascade behaviour is specified in the Business Rules
+ * doc under "Account Deletion Rules".
+ *
+ * Deletes the CURRENTLY AUTHENTICATED user - the id comes from the verified
+ * JWT, never from the request body, so nobody can delete someone else's
+ * account by guessing an id.
+ *
+ * Requires the account password in the body, even though the caller already
+ * proved they hold a valid token. A token can be replayed from a shared
+ * machine, a leaked log, or an unlocked laptop; a password re-prompt means
+ * possession of the token alone isn't enough to destroy an account. This is
+ * standard practice for irreversible account actions and is cheap to add
+ * here (NFR-03).
+ */
+
+async function deleteMe(req, res, next) {
+    try {
+        const { password } = req.body || {};
+
+        if (!password) {
+            return res.status(400).json({ error: 'password is required to delete your account' });
+        }
+
+        // Needs the hash, so use the password-bearing lookup rather than the
+        // default findUserById.
+        const user = await User.findUserByIdWithPassword(req.user.id);
+
+        if (!user) {
+            // Valid token, but the row is gone - e.g. the account was already
+            // deleted in another tab/session. Same 401 as GET /me for the same
+            // reason: the token is no longer usable, and the client should log
+            // out rather than retry.
+            return res.status(401).json({ error: 'Account no longer exists' });
+        }
+
+        const passwordMatches = await bcrypt.compare(password, user.password_hash);
+        if (!passwordMatches) {
+            return res.status(401).json({ error: 'Incorrect password' });
+        }
+
+        const deleted = await User.deleteUser(req.user.id);
+
+        if (!deleted) {
+            // Lost a race - the account was deleted between the password check
+            // above and the delete itself.
+            return res.status(401).json({ error: 'Account no longer exists' });
+        }
+
+        // Report what actually went away. For an admin this can include other
+        // players' bookings on their courts, so it's worth being explicit
+        // rather than returning a bare 204.
+        res.status(200).json({
+            message: 'Account deleted',
+            deleted,
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { register, login, me, updateMe, uploadPhoto, deleteMe };

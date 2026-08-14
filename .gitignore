@@ -23,6 +23,14 @@ npm-debug.log*
 # Test artifacts
 playwright-report/
 test-results/
+testing/playwright/screenshots/
+
+# Playwright test credentials - real accounts/passwords used by specs,
+# never committed. See testing/playwright/credentials.example.json for
+# the expected shape.
+testing/playwright/credentials.json
+testing/postman/environments/local.postman_environment.json
+testing/postman/newman/
 
 # User-uploaded files (local dev only - never commit real uploads)
 backend-node/uploads/*

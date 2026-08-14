@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import Avatar from '../components/Avatar.jsx';
@@ -10,13 +11,22 @@ import Avatar from '../components/Avatar.jsx';
  * both only fire if that section actually changed.
  */
 export default function ProfileSettings() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ fullName: user?.full_name || '', location: user?.location || '' });
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(user?.photo_url || null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Account deletion (UC-06). Kept in its own state rather than reusing the
+  // profile form's error/saving flags, so a failed delete can't clear a
+  // "Saved." message from the form above it, or vice versa.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -46,6 +56,37 @@ export default function ProfileSettings() {
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  function cancelDelete() {
+    setConfirmingDelete(false);
+    setDeletePassword('');
+    setDeleteError(null);
+  }
+
+  /**
+   * UC-06 step 3: confirm with the account password, then delete.
+   *
+   * On success the account is gone, so there's nothing to navigate back to -
+   * we move to the landing page FIRST and clear auth state after. Doing it in
+   * that order matters: logout() alone would leave us on /profile, whose
+   * RequireAuth guard would bounce to /login, which is not where UC-06 says a
+   * deleted user should end up.
+   */
+  async function handleDelete(e) {
+    e.preventDefault();
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await api.deleteAccount(deletePassword);
+      navigate('/', { replace: true });
+      logout();
+    } catch (err) {
+      // Wrong password (401) lands here - stay on the page with the panel
+      // open so the user can retry without starting over.
+      setDeleteError(err.message);
+      setDeleting(false);
     }
   }
 
@@ -95,11 +136,10 @@ export default function ProfileSettings() {
           </form>
         </div>
 
-        {/* Password change and account deletion aren't wired up on the
-            backend yet (no PATCH /auth/me/password or DELETE /auth/me
-            route exists) - these stay visually in place per the design
+        {/* Password change still has no backend route (no PATCH
+            /auth/me/password), so it stays visually in place per the design
             handoff but disabled, rather than faking a call to an endpoint
-            that doesn't exist. */}
+            that doesn't exist. Account deletion below is now live. */}
         <div className="card">
           <h4 style={{ margin: '0 0 0.9rem' }}>Change password</h4>
           <form className="form-stack">
@@ -113,6 +153,10 @@ export default function ProfileSettings() {
           </form>
         </div>
 
+        {/* Danger zone - UC-06. Deliberately a two-step flow: the first click
+            only opens the confirmation, it doesn't delete anything. The
+            destructive call needs a second, deliberate action plus the
+            account password. */}
         <div
           style={{
             border: '1px solid var(--color-hazard)',
@@ -120,21 +164,89 @@ export default function ProfileSettings() {
             padding: '1.5rem',
             background: 'rgba(181, 72, 43, 0.06)',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '1rem',
-            flexWrap: 'wrap',
+            flexDirection: 'column',
+            gap: '1.25rem',
           }}
         >
-          <div>
-            <h4 style={{ margin: '0 0 0.25rem', color: 'var(--color-hazard)' }}>Delete account</h4>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-ink-muted)' }}>
-              This cancels all bookings and cannot be undone.
-            </p>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <h4 style={{ margin: '0 0 0.25rem', color: 'var(--color-hazard)' }}>Delete account</h4>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-ink-muted)' }}>
+                This cancels all bookings and cannot be undone.
+              </p>
+            </div>
+            {!confirmingDelete && (
+              <button type="button" className="danger" onClick={() => setConfirmingDelete(true)}>
+                Delete
+              </button>
+            )}
           </div>
-          <button type="button" className="danger" disabled title="Coming soon">
-            Delete
-          </button>
+
+          {confirmingDelete && (
+            <form className="form-stack" onSubmit={handleDelete} style={{ gap: '1rem', maxWidth: 'none' }}>
+              {deleteError && <div className="error-banner">{deleteError}</div>}
+
+              <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6 }}>
+                {/* Spelled out per role, because the blast radius genuinely
+                    differs - an admin deleting their account also cancels
+                    OTHER players' games (see "Account Deletion Rules" in the
+                    Business Rules doc). */}
+                {user.role === 'admin' ? (
+                  <>
+                    This permanently deletes your account, <strong>every court you manage</strong>, their
+                    inventory, and <strong>all bookings players have made on them</strong>. Those players
+                    will lose their games. This cannot be undone.
+                  </>
+                ) : (
+                  <>
+                    This permanently deletes your account, <strong>all of your bookings</strong>, and any
+                    Pasalo requests you&apos;ve made. This cannot be undone.
+                  </>
+                )}
+              </p>
+
+              <label>
+                Confirm your password
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  autoComplete="current-password"
+                  placeholder="Your account password"
+                  required
+                  autoFocus
+                />
+              </label>
+
+              <div style={{ display: 'flex', gap: '0.7rem', flexWrap: 'wrap' }}>
+                <button
+                  type="submit"
+                  className="danger"
+                  disabled={deleting || !deletePassword}
+                  style={{ paddingLeft: '1.5rem', paddingRight: '1.5rem' }}
+                >
+                  {deleting ? 'Deleting…' : 'Permanently delete account'}
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={cancelDelete}
+                  disabled={deleting}
+                  style={{ paddingLeft: '1.5rem', paddingRight: '1.5rem' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>

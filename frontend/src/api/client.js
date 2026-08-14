@@ -66,6 +66,10 @@ export const api = {
     formData.append('photo', file);
     return requestFormData('/api/auth/me/photo', formData);
   },
+  // BR-08 / FR-12 / UC-06. The password goes in the body because the backend
+  // re-confirms it before deleting - holding a valid token isn't enough
+  // authority for something irreversible.
+  deleteAccount: (password) => request('/api/auth/me', { method: 'DELETE', body: { password } }),
 
   listCourts: (location) => request(`/api/courts?location=${encodeURIComponent(location)}`),
   listMyCourts: () => request('/api/courts/mine'),

@@ -19,6 +19,11 @@ See `README.md` for the full architecture writeup and setup instructions.
 If a requirement is ambiguous, check whether the Business Rules doc
 resolves it before guessing — it's the most detailed of the five.
 
+## Roadmap - overall direction of the Pickle Rick Project
+
+@docs/roadmap.md
+@docs/project-plan-verview.md
+
 ## Architecture (see README.md § 2 for the full rationale)
 
 - `backend-node/` — Express REST API, source of truth (writes). Auth,
@@ -40,6 +45,22 @@ resolves it before guessing — it's the most detailed of the five.
   never trust a client-supplied admin/user ID in a request body.
 - Comment code thoroughly. This project is explicitly for learning full-stack
   development — comments should explain *why*, not just *what*.
+- Default to production-grade, professional conventions in every aspect —
+  code, commit style, branch naming, security, tooling — even though this
+  is a learning project. See "Professional / Production-Grade
+  Conventions" in `docs/claude-instructions.md` for the current backlog
+  of specifics.
+
+- **Coding Convention**
+- Example Code Snippet:
+
+- Simple Code Comment
+- {
+- 
+-  Code
+-  Snippet
+- 
+- }
 
 ## Build & run
 
@@ -53,7 +74,7 @@ resolves it before guessing — it's the most detailed of the five.
 
 ## Testing
 
-- Postman: `newman run testing/postman/PickleRick.postman_collection.json`
+- Postman: `cd testing/postman && npm test`
   (stack must be running)
 - k6: `k6 run testing/k6/load-test.js`
 - Playwright: `cd testing/playwright && npx playwright test` (stack must
@@ -73,11 +94,13 @@ resolves it before guessing — it's the most detailed of the five.
 
 ## Git
 
-- `main` (production/demo) / `qa` (testing) / `feature/<purpose>` (all
-  local dev).
-- Flow: branch `feature/<purpose>` off `qa` → merge into `qa` to shake out
-  bugs → merge `qa` into `main` once stable. Never develop directly on
-  `qa` or `main`.
+- `main` (production/demo) / `qa` (testing) / prefixed branches for all
+  local dev — `feature/`, `fix/`, `test/`, `chore/`, `docs/`,
+  `refactor/`, `ci/` (see `docs/claude-instructions.md` for the full list
+  and when to use each).
+- Flow: branch `<prefix>/<purpose>` off `qa` → merge into `qa` to shake
+  out bugs → merge `qa` into `main` once stable. Never develop directly
+  on `qa` or `main`.
 - No CI/CD pipeline yet, so these merges are manual for now and PRs are
   being skipped to stay focused on building features first. Once the
   GitHub Actions pipelines (Development/QA/Main, see
