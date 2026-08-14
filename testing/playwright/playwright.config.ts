@@ -13,6 +13,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  /* Registers/tears down the named accounts in credentials.json against the
+     backend API before/after the whole run - see global-setup.ts and
+     global-teardown.ts for why. */
+  globalSetup: './global-setup.ts',
+  globalTeardown: './global-teardown.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
