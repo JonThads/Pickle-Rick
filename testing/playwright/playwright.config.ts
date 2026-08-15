@@ -13,6 +13,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  /* Registers/tears down the named accounts in credentials.json against the
+     backend API before/after the whole run - see global-setup.ts and
+     global-teardown.ts for why. */
+  globalSetup: './global-setup.ts',
+  globalTeardown: './global-teardown.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -40,8 +45,10 @@ export default defineConfig({
     trace: 'on-first-retry',
 
     /* Run headful by default — practicing/observing automation is the point of this
-       project's Playwright suite, not just a pass/fail result (see docs/claude-instructions.md). */
-    headless: false,
+       project's Playwright suite, not just a pass/fail result (see docs/claude-instructions.md).
+       GitHub Actions runners have no display though, so CI forces headless the same way
+       `forbidOnly`/`retries` above already branch on process.env.CI - see PR-46. */
+    headless: !!process.env.CI,
 
     /* Screenshots */
     screenshot: { mode: 'on', fullPage: true },

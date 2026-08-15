@@ -1,0 +1,94 @@
+# =============================================================================
+# Development pipeline - fast feedback on prefixed branches
+# =============================================================================
+# Jira: PR-45. The first CI Pickle Rick has ever had. Deliberately NOT the
+# full test suite (that's qa.yml) - lint + build + "does it boot", so this
+# stays fast enough to actually get looked at. See
+# docs/claude-instructions.md §GitHub §Actions and §Branches for the list
+# of prefixes this triggers on.
+
+name: Development
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+      - 'test/**'
+      - 'chore/**'
+      - 'docs/**'
+      - 'refactor/**'
+      - 'ci/**'
+      # Deliberately excludes qa/main - those are gated by qa.yml/main.yml
+      # instead, which run the full suite, not this fast-feedback one.
+
+jobs:
+  backend:
+    name: backend-node - lint & boot check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # ⚠️ No `cache: npm` here: actions/setup-node's cache needs a
+          # committed package-lock.json to hash, and backend-node doesn't
+          # have one yet (see docs/roadmap.md "Lockfile discipline" - an
+          # existing backlog item, not something new). Add `cache: npm`
+          # back here once that lockfile is committed.
+
+      # `npm ci` requires that same lockfile, so `npm install` for now.
+      - name: Install dependencies
+        working-directory: backend-node
+        run: npm install
+
+      # No ESLint config exists yet (docs/roadmap.md backlog). `--if-present`
+      # makes this a silent no-op today and starts enforcing itself the
+      # moment a `lint` script is added to package.json - no workflow
+      # change needed then.
+      - name: Lint
+        working-directory: backend-node
+        run: npm run lint --if-present
+
+      # "Confirm the backend starts" (PR-45 acceptance criterion) without
+      # standing up the full Docker stack - config/db.js's `pg` Pool
+      # connects lazily on first query, so the server boots and /health
+      # responds even with a placeholder DATABASE_URL that points at
+      # nothing real.
+      - name: Boot check
+        working-directory: backend-node
+        env:
+          PORT: 4000
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          JWT_SECRET: ci_boot_check_placeholder
+        run: |
+          node src/server.js &
+          SERVER_PID=$!
+          timeout 20 bash -c 'until curl -sf http://localhost:4000/health; do sleep 1; done'
+          kill $SERVER_PID
+
+  frontend:
+    name: frontend - lint & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # Same lockfile gap as backend-node - see that job's comment.
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint --if-present
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
