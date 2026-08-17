@@ -26,14 +26,16 @@ Development always happens on one of the prefixed branches above, never
 directly on `qa` or `main`.
 
 1. Branch `<prefix>/<purpose>` off `qa`.
-2. Merge `<prefix>/<purpose>` into `qa` to check for bugs/issues.
-3. Once `qa` is verified stable, merge `qa` into `main` for production.
+2. Open a pull request into `qa` — the QA pipeline (see "Actions" below)
+   runs the full Postman + Playwright suite against it before it can
+   merge.
+3. Once `qa` is verified stable, open a pull request from `qa` into
+   `main` for production — the Main pipeline additionally runs k6, a
+   Docker image build check, and a secrets scan.
 
-For now (no CI/CD pipeline yet), merges in this flow are done manually and
-PRs/pull requests are being skipped so development can stay focused on
-building out Pickle Rick's features first. Once the GitHub Actions
-pipelines below exist, merging and automated testing between these
-branches should be executed through them instead of manually.
+The GitHub Actions pipelines below are implemented and gate every merge
+into `qa` and `main` via required status checks — merges are no longer
+manual and PRs are no longer skipped.
 
 ## GitHub
 
@@ -44,11 +46,14 @@ branches should be executed through them instead of manually.
 ### Actions
 
 Three pipelines: GitHub Actions should have a check and testing for every
-code merge.
+code merge. All three are implemented (`.github/workflows/`).
 
-- Development
-- QA
-- Main
+- Development — lint/build/boot-check, fires on pushes to the prefixed
+  branches above (not `qa`/`main`)
+- QA — full Postman + Playwright suite, gates PRs/pushes into `qa`
+- Main — QA's suite plus k6, a Docker image build check, and a secrets
+  scan, gates PRs/pushes into `main`; optional manual
+  `workflow_dispatch` tags a release
 
 ## Environment
 

@@ -77,8 +77,8 @@ than silently overwritten:
 | Shop & purchasing | 🔨 Not started | `orders`/`order_items` tables exist; **no** model, controller, route, or page |
 | Analytics service (FastAPI) | 🔨 Not started | Directory absent; `AdminReports.jsx` is an honest placeholder |
 | Playwright E2E | 🟡 Framework done, coverage thin | POM + fixtures built; **1 spec file, 5 tests**, Auth module only |
-| Postman / k6 | 🔨 Not started | Directories absent |
-| CI/CD | 🔨 Not started | No `.github/workflows/` |
+| Postman / k6 | 🟡 Scaffolded, coverage started | `testing/postman/` (Auth, Court Management, Player Bookings start), `testing/k6/smoke-test.js` — not every endpoint yet |
+| CI/CD | ✅ Complete | `.github/workflows/` — Development/QA/Main pipelines live, branch protection on `main` |
 | `README.md` | 🔨 Not started | Referenced by `CLAUDE.md`, does not exist |
 | Cloud deployment | 🔨 Not started | SRS currently constrains to local only |
 | AI feature | 💡 Not started | Not in any requirement doc |
@@ -191,9 +191,9 @@ Schema is ready (`orders`, `order_items` with `unit_price_php` price snapshot).
 | Postgres init via `/docker-entrypoint-initdb.d/` | ✅ |
 | Playwright framework (POM, fixtures, headful, screenshots) | ✅ |
 | Playwright coverage | 🟡 Auth module only (5 tests) |
-| Postman collection | 🔨 |
-| k6 scripts | 🔨 |
-| GitHub Actions (Development / QA / Main) | 🔨 |
+| Postman collection | ✅ (initial coverage: Auth, Court Management, Player Bookings start) |
+| k6 scripts | ✅ (smoke test) |
+| GitHub Actions (Development / QA / Main) | ✅ |
 | `README.md` | 🔨 |
 | Seed / demo data script | 🔨 |
 | Cloud deployment | 🔨 |
@@ -362,6 +362,21 @@ works and should not be rebuilt — these tickets are **coverage**, not setup.
 
 **PR-51 closes a documented loop.** `CLAUDE.md` states PRs are deliberately
 skipped *until the pipelines exist* — that reasoning expires here.
+
+**Status update (2026-08-15):** PR-45, PR-46, and PR-47 are done — all
+three pipelines exist and are enforced (`.github/workflows/`), and
+branch protection on `main` requires the suite, image-build, and
+secrets-scan checks before merge. PR-46's original blocker
+(`testing/playwright/credentials.example.json` referenced accounts —
+`admins.adminXYZ`, `players.none` — that didn't match the spec files and
+were never actually seeded in a fresh database) is fixed via
+`global-setup.ts`/`global-teardown.ts`, which self-register and tear
+down the named test accounts against the live API, mirroring Postman's
+`pm-` convention with a `pw-` prefix. PR-51 is also effectively done —
+`qa`→`main` and feature branches now merge via reviewed pull requests
+(#1–#3), not manual merges. **Mark PR-45, PR-46, PR-47, and PR-51 Done in
+Jira** — this file has no live Jira connection this session, so the
+board itself still needs updating by hand.
 
 ### Epic PR-8 — Hardening & Production Readiness `devops` `security`
 
