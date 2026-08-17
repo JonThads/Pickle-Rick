@@ -101,8 +101,7 @@ resolves it before guessing — it's the most detailed of the five.
 - Flow: branch `<prefix>/<purpose>` off `qa` → merge into `qa` to shake
   out bugs → merge `qa` into `main` once stable. Never develop directly
   on `qa` or `main`.
-- No CI/CD pipeline yet, so these merges are manual for now and PRs are
-  being skipped to stay focused on building features first. Once the
-  GitHub Actions pipelines (Development/QA/Main, see
-  `docs/claude-instructions.md`) exist, merging and automated testing
-  between branches should go through them instead.
+- The GitHub Actions pipelines (Development/QA/Main — see
+  `docs/claude-instructions.md`) are live. Merges into `qa` and `main` go
+  through pull requests gated by these pipelines' required status
+  checks, not manual merges.

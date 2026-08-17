@@ -45,6 +45,33 @@ don't let it drift out of sync with reality the way the "5 docs" can't
   runs non-detached per `docs/claude-instructions.md`
 - [x] Dockerfiles for `backend-node` and `frontend`
 
+### Testing (`testing/`)
+- [x] Postman collection + environment — self-registering `pm-` prefixed
+  accounts, `psql`-based teardown (Auth, Court Management, Player
+  Bookings coverage started; not every endpoint yet)
+- [x] k6 smoke test (`testing/k6/smoke-test.js`)
+- [x] Playwright + TS suite (`testing/playwright/`) — Auth module only
+  (5 tests) so far; headful locally, headless in CI via
+  `process.env.CI`; `global-setup.ts`/`global-teardown.ts` self-register
+  and tear down named test accounts against the live API, mirroring
+  Postman's `pm-` convention with a `pw-` prefix
+
+### CI/CD (`.github/workflows/`)
+- [x] Development pipeline — lint/build/boot-check, fires on
+  `feature/**`/`fix/**`/`test/**`/`chore/**`/`docs/**`/`refactor/**`/`ci/**`
+  pushes
+- [x] QA pipeline — full Postman + Playwright suite against a fresh
+  `docker compose` stack, gates PRs/pushes into `qa`, publishes the
+  Playwright HTML report to GitHub Pages on push
+- [x] Main pipeline — QA's suite plus k6, a Docker image build check,
+  and a Gitleaks secrets scan, gates PRs/pushes into `main`; optional
+  manual `workflow_dispatch` tags a release (`vYYYY.MM.DD-<sha>`)
+- [x] Branch protection on `main` requiring the suite / build-images /
+  secrets-scan checks before merge
+- [x] Merges are no longer manual and PRs are no longer skipped —
+  `feature → qa → main` now goes through reviewed pull requests gated
+  by these pipelines
+
 ---
 
 ## 2. What's remaining
@@ -92,23 +119,6 @@ effectively pre-agreed. Needs:
   courts and other players' bookings go too), then logout and redirect to
   the landing page
 
-### Testing — nothing exists yet
-`testing/` isn't in the repo at all, despite being referenced throughout
-CLAUDE.md and `docs/claude-instructions.md`:
-- [ ] Postman collection + environment (smoke/sanity) with a cleanup
-  request/folder at the end
-- [ ] k6 load script(s) (`testing/k6/load-test.js`) with a `teardown()`
-- [ ] Playwright + TS suite (`testing/playwright/`), run headful per
-  policy, with `afterEach`/`afterAll` cleanup — see the plan already
-  discussed in this conversation for the scenario list
-
-### CI/CD — not started
-- [ ] No `.github/workflows/` directory yet
-- [ ] Three pipelines called for in `docs/claude-instructions.md`:
-  Development, QA, Main — none exist
-- [ ] Until these exist, `feature → qa → main` merges stay manual and
-  PR-less by design (documented, not an oversight)
-
 ### Docs
 - [ ] `README.md` — CLAUDE.md says "See README.md for the full
   architecture writeup and setup instructions," but the file doesn't
@@ -132,13 +142,12 @@ everything built before it:
    re-enable it in `docker-compose.yml` and wire `AdminReports.jsx`.
 4. **`README.md`** — write once the architecture stops moving quite so
    fast; document what actually got built, not just what was planned.
-5. **Testing suite** (Postman → k6 → Playwright) — do this once the
-   feature set above is stable, so tests aren't rewritten every time a
-   new endpoint lands. Postman first (fastest feedback on the API
-   surface), then k6, then Playwright (most expensive to maintain).
-6. **CI/CD** (GitHub Actions: Development/QA/Main) — last, since it
-   should run the test suites from step 5. This is also the point where
-   PRs stop being skipped.
+5. ~~**Testing suite**~~ — done (Postman → k6 → Playwright, in that
+   order). Coverage is still partial (Auth module only for Playwright;
+   not every endpoint in Postman/k6 yet) — that's ongoing work, not
+   scaffolding.
+6. ~~**CI/CD**~~ — done (GitHub Actions: Development/QA/Main, plus
+   branch protection on `main`). PRs are no longer skipped.
 
 ---
 
