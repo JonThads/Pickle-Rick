@@ -15,18 +15,29 @@ const courtRoutes = require('./routes/courtRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const { client, metricsMiddleware } = require('./metrics'); 
 
 const app = express();
 
 app.use(cors()); // allow the frontend (different origin) to call this API
 app.use(express.json()); // parse JSON request bodies into req.body
 
+// Must be registered before any route to measure Failed and 404 Requests
+app.use(metricsMiddleware);
+
 // Uploaded profile photos - written here by middleware/upload.js.
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Simple health check - useful for Docker healthchecks, k6, and just
+// Simple health check - useful for Docker healthchecks and k6
 // confirming the server is up while you're developing.
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Prometheus scrape endpoint. Must come before the 404 handler below,
+// or Prometheus scrapes a 404 body every 5s instead of real metrics.
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/courts', courtRoutes);
