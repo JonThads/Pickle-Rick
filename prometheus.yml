@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'pickle_rick_backend'
+    static_configs:
+      - targets: ['backend-node:4000']
+    metrics_path: /metrics

@@ -1,0 +1,7 @@
+# Never copy host node_modules into the image - it's built with RUN npm
+# install inside the container (Dockerfile) targeting Linux/Alpine.
+# Copying the host's version over it breaks native modules like bcrypt,
+# which compile a platform-specific binary (e.g. a Windows .node file
+# built on a Windows host won't load inside the Linux container).
+node_modules
+npm-debug.log
