@@ -1,0 +1,6 @@
+# Never copy host node_modules into the image - it's built with RUN npm
+# install inside the container (Dockerfile) targeting Linux/Alpine.
+# Copying the host's version over it breaks native modules (e.g. esbuild,
+# which Vite depends on) built for the host's OS/arch instead of Linux.
+node_modules
+npm-debug.log
