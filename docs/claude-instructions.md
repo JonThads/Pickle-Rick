@@ -98,13 +98,57 @@ every aspect — code, git, tooling, process — unless a specific doc says
 otherwise. This section is the running list of what that means concretely
 here.
 
-### Commit messages
+### Conventional Branch
 
-Already in use (see `git log`): `[Type]: description`. Keep using it,
+Use the standards established in [conventionalbranch.org](https://conventionalbranch.org/)
+
+Note:
+
+- Branch "main" for Production
+- Branch "qa" for QA and Testing
+- Local development branches, all cut from `qa`, prefixed by purpose
+  (mirrors the commit-type prefixes in "Professional / Production-Grade
+  Conventions" below):
+  - `feature/<purpose>` — new functionality
+  - `fix/<purpose>` — bug fixes
+  - `test/<purpose>` — test infrastructure/tooling (Postman, k6,
+    Playwright) — this is process/tooling work, not a shipped product
+    feature, so it gets its own prefix rather than living under `feature/`
+  - `chore/<purpose>` — dependency, config, or tooling work with no
+    behavior change
+  - `docs/<purpose>` — documentation-only changes
+  - `refactor/<purpose>` — internal restructuring, no behavior change
+  - `ci/<purpose>` — GitHub Actions / pipeline changes
+
+### Conventional Commits
+
+Disregard already used previous Commit Messaging Standard primarily,
+
+"Already in use (see `git log`): `[Type]: description`. Keep using it,
 with the full type list, matching the branch prefixes above: `feature`,
-`fix`, `docs`, `chore`, `test`, `refactor`, `perf`, `ci`. This is this
-repo's own bracketed variant of
-[Conventional Commits](https://www.conventionalcommits.org/).
+`fix`, `docs`, `chore`, `test`, `refactor`, `perf`, `ci`."
+
+Instead, use the standards established in [Conventional Commits](https://www.conventionalcommits.org/).
+
+Also use the Jira Work Item keys for the git commit messages (For example, git commit -m "JRA-123) to reference work items in development spaces. When you create a pull request, use the key in the pull request title.
+
+Jira Reference: [support.atlassian.com/jira-software-cloud/docs/reference-issues-in-your-development-work](https://support.atlassian.com/jira-software-cloud/docs/reference-issues-in-your-development-work/)
+
+For Pull Requests:
+
+Check out a new branch in your repo, using the work item key in the branch name. For example, git checkout -b JRA-123-<branch-name></branch>.When you create a pull request, use the work item key in the pull request title.
+
+### Conventional Comments
+
+Use the standards established in [conventionalcomments.org](https://conventionalcomments.org/)
+
+Plus a Reference Work Item or Ticket Number.
+
+For example, "[Comment] as per Jira Work Item RAG-14"
+
+### Common Changelog
+
+Use the standards established in [common-changelog.org](https://common-changelog.org/)
 
 ### Suggested standards not yet adopted
 
