@@ -2,7 +2,8 @@
 
 Date: 2026-10-24 (Asia/Singapore)
 Branch: `fix/PR-14-unique-court-names`
-Delivery state: local verification; awaiting the user's review before any push.
+Delivery state: local verification passed; the user approved promotion through
+`qa` to `main` on 2026-10-24. Remote PR checks remain required.
 
 ## Change and scope
 
@@ -16,8 +17,9 @@ Names use their stored spelling; this change does not introduce trimming or
 case-insensitive matching. Different admins may still use the same name.
 
 The existing PR-38 test commit is included locally so the fix can be reviewed
-with the original regression assertion intact. The open test PR has not been
-updated or merged as part of this local verification.
+with the original regression assertion intact. The original test PR is
+superseded once this combined fix and regression coverage lands; its earlier
+failing QA result remains historical evidence.
 
 ## Executed verification
 
@@ -93,7 +95,7 @@ npx playwright show-report
 
 ## Next gate
 
-The user must confirm the local result before pushing. Subsequent integration
-must still follow PRs into `qa`, passing QA checks, then a `qa` → `main` PR
-with all required Main checks. Local passes do not establish remote CI passes
-or Jira completion; no Jira records were changed.
+The user approved pushing the working branch through `qa` to `main` after
+local verification. Integration must follow a PR into `qa`, passing QA checks,
+then a `qa` → `main` PR with all required Main checks. Local passes do not
+establish remote CI passes or Jira completion; no Jira records were changed.

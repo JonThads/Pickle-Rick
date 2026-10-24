@@ -226,10 +226,10 @@ says players may only book slots "not yet tagged as approved."
 Business Rules: "Admins can only add one court with a given Court Name." Neither
 a DB constraint nor a controller check exists.
 
-Local remediation (2026-10-24, not yet pushed):
+Remediation approved for promotion (2026-10-24):
 `fix/PR-14-unique-court-names` adds a per-admin unique index and a friendly
 409 response. Headed local Playwright and API acceptance checks passed;
-personal review and PR gates are pending. See
+the user approved promotion and remote PR gates remain required. See
 [PR-14 local verification](verification/2026-10-24-PR-14-court-name-fix.md).
 
 **DEF-4 — Approval is not atomic.**
