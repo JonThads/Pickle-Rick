@@ -5,6 +5,7 @@
 
 const Booking = require('../models/Booking');
 const Court = require('../models/Court');
+const { loadOwnedCourtOr403 } = require('../utils/courtOwnership');
 
 /**
  * POST /api/bookings  (any logged-in player)
@@ -73,6 +74,9 @@ async function listBookingsForCourt(req, res, next) {
             return res.status(400).json({ error: 'date query param (YYYY-MM-DD) is required' });
         }
 
+        // PR-12 / BR-05: authorize before loading players' booking details.
+        if (!await loadOwnedCourtOr403(req, res, courtId)) return;
+
         // Detailed (joined to the owner's profile) so the Admin court-detail
         // accordion can show who requested/holds each slot, plus that
         // booking's approved Pasalo participants.
@@ -128,6 +132,8 @@ async function approveBooking(req, res, next) {
             return res.status(404).json({ error: 'Booking not found' });
         }
 
+        if (!await loadOwnedCourtOr403(req, res, booking.court_id)) return;
+
         const approved = await Booking.updateBookingStatus(id, 'approved');
 
         // UC-05-02 (Admin) Result step 3: "All other players' bookings for the
@@ -163,6 +169,10 @@ async function cancelBooking(req, res, next) {
 
         const isOwner = booking.booked_by === req.user.id;
         const isAdmin = req.user.role === 'admin';
+
+        // PR-12 / NFR-03: admins manage only their own courts. Players
+        // retain the existing right to cancel their own reservation.
+        if (isAdmin && !await loadOwnedCourtOr403(req, res, booking.court_id)) return;
 
         if (!isOwner && !isAdmin) {
             return res.status(403).json({ error: 'You do not have permission to cancel this booking' });
