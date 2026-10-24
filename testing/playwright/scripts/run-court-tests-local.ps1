@@ -3,7 +3,11 @@
 # deletes its accounts, so always use disposable examples for this run.
 param(
     [ValidateSet('chromium', 'firefox', 'webkit')]
-    [string]$Project
+    [string]$Project,
+    # PR-12/13/15: reuse the same safe credential restoration for bug
+    # regressions or the full suite, instead of copying a second runner.
+    [string]$Spec = 'tests/court-management.spec.ts',
+    [switch]$All
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,7 +27,8 @@ try {
     Copy-Item -LiteralPath 'credentials.example.json' -Destination $credentialPath
     $env:CI = $null
     $env:PLAYWRIGHT_HTML_OPEN = 'never'
-    $testArguments = @('test', 'tests/court-management.spec.ts', '--headed', '--reporter=list,html')
+    $testArguments = @('test', '--headed', '--reporter=list,html')
+    if (-not $All) { $testArguments += $Spec }
     if ($Project) {
         $testArguments += "--project=$Project"
     }

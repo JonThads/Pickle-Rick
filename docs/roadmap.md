@@ -8,12 +8,14 @@ This is a living document. Update the checkboxes/notes as work lands —
 don't let it drift out of sync with reality the way the "5 docs" can't
 (those describe *requirements*; this describes *implementation status*).
 
-Local verification update (2026-10-24): `fix/PR-14-unique-court-names`
-contains the duplicate-name fix and the existing three Court Management
-Playwright cases. All nine Court Management browser executions passed
-headed locally. The user approved promotion to `main`; remote PR checks and
-integration remain required.
-See [PR-14 local verification](verification/2026-10-24-PR-14-court-name-fix.md).
+Defect update (2026-10-24): PR-14 merged through GitHub #14/#15 into qa/main
+and is Done in Jira. `fix/PR-12-booking-defects` implements PR-12 ownership,
+PR-13 approved-slot rejection, PR-15 transactional approval and PR-16 order
+defaults. All 12 real API/database regressions passed against fresh Docker;
+the three new UI regressions passed headed Chromium. Full browser results
+and integration evidence are tracked in
+[remaining bug verification](verification/2026-10-24-remaining-bugs.md).
+Remote QA/Main PR gates remain required before promoting this branch.
 
 ---
 
@@ -57,8 +59,8 @@ See [PR-14 local verification](verification/2026-10-24-PR-14-court-name-fix.md).
   accounts, `psql`-based teardown (Auth, Court Management, Player
   Bookings coverage started; not every endpoint yet)
 - [x] k6 smoke test (`testing/k6/smoke-test.js`)
-- [x] Playwright + TS suite (`testing/playwright/`) — Auth module only
-  (5 tests) so far; headful locally, headless in CI via
+- [x] Playwright + TS suite (`testing/playwright/`) — Auth, Court Management,
+  and scoped booking-defect regressions; headful locally, headless in CI via
   `process.env.CI`; `global-setup.ts`/`global-teardown.ts` self-register
   and tear down named test accounts against the live API, mirroring
   Postman's `pm-` convention with a `pw-` prefix

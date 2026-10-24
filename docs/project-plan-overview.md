@@ -202,6 +202,13 @@ Schema is ready (`orders`, `order_items` with `unit_price_php` price snapshot).
 
 ## 5. Defects Found During Verification
 
+**Remediation update (2026-10-24):** The descriptions below preserve the
+original findings. PR-14 is merged into qa/main (GitHub #14/#15) and Done in
+Jira. PR-12, PR-13, PR-15 and PR-16 are implemented on
+`fix/PR-12-booking-defects`, with 12 passing Docker API/database regressions
+and headed Chromium UI coverage; promotion still requires remote PR checks.
+See [verification and limitations](verification/2026-10-24-remaining-bugs.md).
+
 These are **not** roadmap items — they are existing code behaving against a
 documented rule. Listed most severe first.
 
