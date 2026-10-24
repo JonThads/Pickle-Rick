@@ -72,6 +72,11 @@ jobs:
       - name: Wait for frontend to be reachable
         run: timeout 90 bash -c 'until curl -sf http://localhost:5173; do echo "waiting for frontend..."; sleep 2; done'
 
+      # PR-12/13/15/16: exercise real API authorization, slot concurrency,
+      # rollback and the fresh order schema before the browser suite.
+      - name: Run backend API and database regressions
+        run: docker compose exec -T backend-node npm test
+
       # --- Postman / Newman -----------------------------------------------
       - name: Install Postman suite dependencies
         working-directory: testing/postman
