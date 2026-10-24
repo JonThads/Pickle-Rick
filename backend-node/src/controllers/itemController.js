@@ -6,28 +6,7 @@
 
 const Item = require('../models/Item');
 const Court = require('../models/Court');
-
-/**
- * Shared ownership check: an admin may only manage inventory on courts they
- * themselves created (same rule courtController.createCourt already relies
- * on `req.user.id`, not the request body, to establish - requireRole('admin')
- * alone would let ANY admin edit ANY court's items, which is wrong).
- * Returns the court on success, or null after already sending a response.
- */
-
-async function loadOwnedCourtOr403(req, res) {
-  const { courtId } = req.params;
-  const court = await Court.findCourtById(courtId);
-  if (!court) {
-    res.status(404).json({ error: 'Court not found' });
-    return null;
-  }
-  if (court.admin_id !== req.user.id) {
-    res.status(403).json({ error: 'You do not manage this court' });
-    return null;
-  }
-  return court;
-}
+const { loadOwnedCourtOr403 } = require('../utils/courtOwnership');
 
 /**
  * GET /api/courts/:courtId/items  (any logged-in user)
