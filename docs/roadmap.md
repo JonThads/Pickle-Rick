@@ -8,6 +8,12 @@ This is a living document. Update the checkboxes/notes as work lands —
 don't let it drift out of sync with reality the way the "5 docs" can't
 (those describe *requirements*; this describes *implementation status*).
 
+Local verification update (2026-10-24): `fix/PR-14-unique-court-names`
+contains the duplicate-name fix and the existing three Court Management
+Playwright cases. All nine Court Management browser executions passed
+headed locally; personal review, push, and PR integration are pending.
+See [PR-14 local verification](verification/2026-10-24-PR-14-court-name-fix.md).
+
 ---
 
 ## 1. What's already done
