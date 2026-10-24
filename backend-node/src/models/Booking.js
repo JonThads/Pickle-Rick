@@ -10,20 +10,40 @@ const MAX_PLAYERS_PER_BOOKING = 8; // BR-06: "Only a maximum of 8 players in tha
 
 /**
  * Create a booking for one hour slot on one court/date (BR-03, FR-06).
- * The UNIQUE constraint on (court_id, booking_date, start_hour) in the
- * database is what actually prevents double-booking - this function will
- * throw if that constraint is violated, and the controller turns that into
- * a friendly 409 response.
+ * PR-13 / FR-06 / NFR-01: lock the parent court before checking the slot.
+ * The same lock is used during approval (PR-15), so a pending insert cannot
+ * slip in after an approval has cancelled its competitors. A court lock is
+ * deliberately simple: it also works when the slot has no booking row yet.
+ * It serializes writes per court, which is acceptable for this local app.
+ * The partial unique index is a final guard for APPROVED rows only.
  */
 
 async function createBooking({ courtId, bookedBy, bookingDate, startHour, status }) {
-    const result = await pool.query(
-        `INSERT INTO bookings (court_id, booked_by, booking_date, start_hour, status)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING *`,
-        [courtId, bookedBy, bookingDate, startHour, status]
-    );
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query('SELECT id FROM courts WHERE id = $1 FOR UPDATE', [courtId]);
+        // SQL repeats the controller guard under the lock: the earlier read
+        // alone cannot protect against a simultaneous create or approval.
+        const result = await client.query(
+            `INSERT INTO bookings (court_id, booked_by, booking_date, start_hour, status)
+             SELECT $1, $2, $3, $4, $5
+             WHERE NOT EXISTS (
+                 SELECT 1 FROM bookings
+                 WHERE court_id = $1 AND booking_date = $3 AND start_hour = $4
+                   AND (status = 'approved' OR (booked_by = $2 AND status = 'pending'))
+             )
+             RETURNING *`,
+            [courtId, bookedBy, bookingDate, startHour, status]
+        );
+        await client.query('COMMIT');
+        return result.rows[0] || null;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 }
 
 /**

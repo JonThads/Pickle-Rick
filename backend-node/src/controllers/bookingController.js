@@ -29,8 +29,13 @@ async function createBooking(req, res, next) {
         // they already hold (pending or approved) - not a documented rule by
         // ID, but a sane guard against accidental double-submits.
         const existing = await Booking.findBookingsForCourtOnDate(courtId, bookingDate);
+        // PR-13 / FR-06: pending inserts do not hit the approved-only unique
+        // index. Check all players' approved bookings, not just this player's.
+        if (existing.some(b => b.start_hour === Number(startHour) && b.status === 'approved')) {
+            return res.status(409).json({ error: 'This slot is already approved' });
+        }
         const alreadyRequested = existing.some(
-            (b) => b.start_hour === startHour && b.booked_by === req.user.id && b.status !== 'cancelled'
+            (b) => b.start_hour === Number(startHour) && b.booked_by === req.user.id && b.status !== 'cancelled'
         );
         if (alreadyRequested) {
             return res.status(409).json({ error: 'You already have a request for this slot' });
@@ -50,15 +55,18 @@ async function createBooking(req, res, next) {
             status,
         });
 
+        // A concurrent request may have won after the controller's read.
+        // The model rechecks under the shared court lock before inserting.
+        if (!booking) {
+            return res.status(409).json({ error: 'This slot is already approved or you already have a request for it' });
+        }
+
         res.status(201).json({ booking });
     } catch (error) {
 
-        // The DB's UNIQUE(court_id, booking_date, start_hour) constraint fires
-        // if this exact slot is already taken - errorHandler.js turns that into
-        // a clean 409 response (see PG_UNIQUE_VIOLATION there), so we don't
-        // need to duplicate that check here in application code.
-
-    next(error);
+        // The partial index rejects competing APPROVED rows only; it does
+        // not reject pending requests. See the explicit FR-06 guard above.
+        next(error);
     }
 }
 
