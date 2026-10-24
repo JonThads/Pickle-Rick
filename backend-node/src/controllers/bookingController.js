@@ -128,8 +128,8 @@ async function listMyBookings(req, res, next) {
  * PATCH /api/bookings/:id/approve  (admin only)
  * UC-05-02 (Admin flow): admin approves one player's booking for a
  * contested slot; every other pending booking for that same slot should be
- * cancelled (Result step 3 in the use case doc). We keep that "cancel the
- * rest" logic here in the controller so it's easy to read end-to-end.
+ * cancelled (Result step 3 in the use case doc). The controller authorizes
+ * the actor; the model keeps both SQL updates on one transaction (PR-15).
  */
 
 async function approveBooking(req, res, next) {
@@ -142,18 +142,10 @@ async function approveBooking(req, res, next) {
 
         if (!await loadOwnedCourtOr403(req, res, booking.court_id)) return;
 
-        const approved = await Booking.updateBookingStatus(id, 'approved');
-
-        // UC-05-02 (Admin) Result step 3: "All other players' bookings for the
-        // same time slot are cancelled." Competing PENDING requests for this
-        // exact court/date/hour can coexist (see the partial unique index in
-        // schema.sql), so once one is approved the rest lose automatically.
-        await Booking.cancelOtherPendingBookingsForSlot(
-            id,
-            booking.court_id,
-            booking.booking_date,
-            booking.start_hour
-        );
+        const approved = await Booking.approveBookingAndCancelOthers(id, booking.court_id);
+        if (!approved) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
 
         res.json({ booking: approved });
 

@@ -115,8 +115,8 @@ async function updateBookingStatus(bookingId, status) {
  * clobbers a booking that's already 'approved' or 'cancelled'.
  */
 
-async function cancelOtherPendingBookingsForSlot(bookingId, courtId, bookingDate, startHour) {
-    const result = await pool.query(
+async function cancelOtherPendingBookingsForSlot(client, bookingId, courtId, bookingDate, startHour) {
+    const result = await client.query(
         `UPDATE bookings
          SET status = 'cancelled'
          WHERE court_id = $1 AND booking_date = $2 AND start_hour = $3
@@ -126,6 +126,38 @@ async function cancelOtherPendingBookingsForSlot(bookingId, courtId, bookingDate
     );
 
     return result.rows;
+}
+
+/**
+ * PR-15 / UC-05-02 (Admin) / NFR-01: approval and competitor cancellation
+ * are one outcome. Every statement uses the same checked-out connection;
+ * an error between updates must undo the approval too. The court lock
+ * matches createBooking's lock order and prevents late pending inserts.
+ */
+async function approveBookingAndCancelOthers(bookingId, courtId) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query('SELECT id FROM courts WHERE id = $1 FOR UPDATE', [courtId]);
+        const result = await client.query(
+            `UPDATE bookings SET status = 'approved'
+             WHERE id = $1 AND court_id = $2 RETURNING *`,
+            [bookingId, courtId]
+        );
+        const approved = result.rows[0];
+        if (approved) {
+            await cancelOtherPendingBookingsForSlot(
+                client, approved.id, approved.court_id, approved.booking_date, approved.start_hour
+            );
+        }
+        await client.query('COMMIT');
+        return approved || null;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 }
 
 /**
@@ -267,7 +299,7 @@ module.exports = {
   findBookingsForPlayer,
   findBookingById,
   updateBookingStatus,
-  cancelOtherPendingBookingsForSlot,
+  approveBookingAndCancelOthers,
   countApprovedPlayers,
   findApprovedPlayersForBooking,
   findPendingJoinRequestsForOwner,
