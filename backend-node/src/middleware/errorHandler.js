@@ -16,6 +16,12 @@ function errorHandler(err, req, res, next) {
     console.log(err);
 
     if (err.code === PG_UNIQUE_VIOLATION) {
+        // PR-14 / UC-03: explain this business-rule violation without
+        // exposing PostgreSQL's detail (which includes internal row values).
+        // Keep the generic response for the app's other unique constraints.
+        if (err.constraint === 'idx_courts_admin_name') {
+            return res.status(409).json({ error: 'A court with this name already exists for your account.' });
+        }
         return res.status(409).json({ error: 'That record already exists (duplicate entry)' });
     }
 

@@ -51,6 +51,13 @@ CREATE TABLE IF NOT EXISTS courts (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- PR-14 / UC-03, Business Rules: court names must be unique per admin.
+-- Enforce this in PostgreSQL so concurrent creates cannot both succeed;
+-- a SELECT-before-INSERT check would race. Including admin_id lets
+-- different admins use the same court name.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_courts_admin_name
+    ON courts (admin_id, name);
+
 -- -----------------------------------------------------------------------------
 -- ITEMS  (per-court shop/inventory - BR-07, UC-04)
 -- -----------------------------------------------------------------------------
