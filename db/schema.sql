@@ -129,7 +129,9 @@ CREATE TABLE IF NOT EXISTS orders (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     court_id   UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
     player_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status     VARCHAR(10) NOT NULL DEFAULT 'pending'
+    -- PR-16 / BR-07: an order starts placed, then becomes picked_up or
+    -- cancelled. A pending cart is not an order; DEFAULT must satisfy CHECK.
+    status     VARCHAR(10) NOT NULL DEFAULT 'placed'
                     CHECK (status IN ('placed', 'picked_up', 'cancelled')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
