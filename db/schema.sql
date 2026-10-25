@@ -111,7 +111,9 @@ CREATE TABLE IF NOT EXISTS booking_players (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     booking_id   UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
     player_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status       VARCHAR(10) NOT NULL DEFAULT 'pending'
+    -- PR-35 / FR-08: 'disapproved' is 11 characters. VARCHAR(10) made
+    -- rejecting a Pasalo request fail with SQLSTATE 22001 instead of saving it.
+    status       VARCHAR(11) NOT NULL DEFAULT 'pending'
                     CHECK (status IN ('pending', 'approved', 'disapproved')),
     requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
