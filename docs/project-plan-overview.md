@@ -9,6 +9,17 @@ inferred from the requirement docs.
 
 **Relationship to other docs:**
 
+**PR-35 update (2026-10-24, branch verification; merge pending):** Existing
+Postman coverage was confirmed at 24 requests. The collection now covers all
+23 mounted business endpoints with 147 requests / 366 assertions, including
+ownership, approved-slot and eight-player negatives, login token reuse, API
+cleanup and SQL/file fallback. Two full Newman runs and a forced-failure
+cleanup experiment passed their expected outcomes. This supersedes the older
+Postman snapshot below without rewriting its dated history. See
+[verification](verification/2026-10-24-PR-35-postman.md). PR-56 versioning has
+not landed; requests continue to use `/api`. The suite exposed and fixes
+`booking_players.status` being too short for `disapproved` in `db/schema.sql`.
+
 - The five docs in `docs/` (BRD, Business Rules, SRS, Use Cases, Claude
   Instructions) describe *requirements* — what Pickle Rick should do.
 - [`roadmap.md`](roadmap.md) is the running *implementation status* log, updated

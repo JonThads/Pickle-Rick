@@ -2,7 +2,8 @@
     "name": "pickle-rick-postman",
     "private": true,
     "scripts": {
-        "test": "node scripts/run.js",
+        "test": "npm run check && node scripts/run.js",
+        "check": "node scripts/check-collection.js && node --test scripts/harness.test.js",
         "teardown": "node scripts/teardown.js"
     },
 

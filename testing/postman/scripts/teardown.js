@@ -1,6 +1,6 @@
-// Deletes every row a Postman run could have created, scoped strictly to the
-// pm-%@picklerick.test email prefix (D3) - so this is structurally incapable
-// of touching a row a human created by hand.
+// Deletes rows from the reserved pm-%@picklerick.test test namespace (D3).
+// Normal runs narrow this to their UUID; standalone recovery sweeps all pm-
+// accounts. Never create intentional development accounts in this namespace.
 //
 // Goes through `docker compose exec ... psql` rather than an API endpoint or
 // the users-row ON DELETE CASCADE, because:
@@ -15,6 +15,11 @@
 // See docs/specs/2026-08-08-postman-newman-scaffolding-design.md D4/D5.
 
 const { spawn } = require('child_process');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const ROOT = path.resolve(__dirname, '../../..');
+const REPORT_DIR = path.resolve(__dirname, '../newman');
+const UPLOAD_DIR = path.join(ROOT, 'backend-node/uploads');
 
 const TEARDOWN_SQL = `
 BEGIN;
@@ -42,7 +47,45 @@ DELETE FROM users WHERE email LIKE 'pm-%@picklerick.test';
 COMMIT;
 `;
 
-function teardown() {
+async function cleanupUploads(uploadManifest) {
+  // PR-35 / NFR-03: remove only files owned by the disposable uploader recorded
+  // BEFORE upload. This also catches a file written before HTTP/DB failure.
+  const manifests = uploadManifest ? [path.basename(uploadManifest)] :
+    (await fs.readdir(REPORT_DIR).catch(err => {
+      if (err.code === 'ENOENT') return [];
+      throw err;
+    })).filter(name => /^uploads-[0-9a-f-]{36}\.json$/i.test(name));
+  for (const name of manifests) {
+    const manifest = path.join(REPORT_DIR, name);
+    let data;
+    try { data = JSON.parse(await fs.readFile(manifest, 'utf8')); }
+    catch (err) { if (err.code === 'ENOENT') continue; throw err; }
+    // Read older exact-filename manifests too, for interrupted-run recovery.
+    let photos = data;
+    if (!Array.isArray(data)) {
+      if (!Array.isArray(data.uploadUserIds) || !data.uploadUserIds.every(id => /^[0-9a-f-]{36}$/i.test(id))) {
+        throw new Error(`Invalid disposable uploader in ${name}`);
+      }
+      const files = await fs.readdir(UPLOAD_DIR).catch(err => {
+        if (err.code === 'ENOENT') return [];
+        throw err;
+      });
+      photos = files.filter(file => {
+        const match = /^([0-9a-f-]{36})-\d+\.svg$/i.exec(file);
+        return match && data.uploadUserIds.includes(match[1]);
+      }).map(file => `/uploads/${file}`);
+    }
+    for (const photo of photos) {
+      if (!/^\/uploads\/[0-9a-f-]{36}-\d+\.svg$/i.test(photo)) {
+        throw new Error(`Invalid test upload path in ${name}`);
+      }
+      await fs.rm(path.join(UPLOAD_DIR, path.basename(photo)), { force: true });
+    }
+    await fs.unlink(manifest);
+  }
+}
+
+function cleanupDatabase(runId) {
   return new Promise((resolve, reject) => {
     const psql = spawn(
       'docker',
@@ -61,7 +104,9 @@ function teardown() {
       ],
       // stderr is captured (not inherited) so a Docker/psql failure surfaces
       // as our own readable message below, not a raw stack trace on stdout.
-      { stdio: ['pipe', 'inherit', 'pipe'] }
+      // PR-35: resolve Compose from the repo root, not testing/postman.
+      // Otherwise a sibling Compose project can be selected by the shell cwd.
+      { cwd: ROOT, stdio: ['pipe', 'inherit', 'pipe'] }
     );
 
     let stderr = '';
@@ -89,9 +134,21 @@ function teardown() {
       resolve();
     });
 
-    psql.stdin.write(TEARDOWN_SQL);
+    // Normal runs clean only their own accounts, so concurrent runs survive.
+    // Standalone recovery intentionally sweeps the reserved Postman namespace.
+    const sql = runId ? TEARDOWN_SQL.replaceAll('pm-%@picklerick.test', `pm-${runId}-%@picklerick.test`) : TEARDOWN_SQL;
+    psql.stdin.write(sql);
     psql.stdin.end();
   });
+}
+
+async function teardown({ uploadManifest, runId } = {}) {
+  if (runId && !/^[0-9a-f-]{36}$/i.test(runId)) throw new Error('Invalid Postman run ID');
+  // PR-35: a locked/missing photo manifest must not prevent database cleanup,
+  // and a Docker failure must not prevent removing uploaded test files.
+  const results = await Promise.allSettled([cleanupUploads(uploadManifest), cleanupDatabase(runId)]);
+  const errors = results.filter(result => result.status === 'rejected').map(result => result.reason);
+  if (errors.length) throw new Error(errors.map(error => error.message).join('\n'));
 }
 
 module.exports = teardown;
