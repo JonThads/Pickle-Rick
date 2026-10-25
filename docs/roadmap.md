@@ -56,8 +56,11 @@ Remote QA/Main PR gates remain required before promoting this branch.
 
 ### Testing (`testing/`)
 - [x] Postman collection + environment — self-registering `pm-` prefixed
-  accounts, `psql`-based teardown (Auth, Court Management, Player
-  Bookings coverage started; not every endpoint yet)
+  accounts; PR-35 branch verification (2026-10-24): all 23 current business
+  endpoints, 147 requests / 366 assertions, final API cleanup and SQL/file
+  fallback. Two full runs passed on an isolated Docker database; failure
+  cleanup also verified. Includes the Pasalo `disapproved` column-width fix.
+  See [PR-35 evidence](verification/2026-10-24-PR-35-postman.md); pending PR merge.
 - [x] k6 smoke test (`testing/k6/smoke-test.js`)
 - [x] Playwright + TS suite (`testing/playwright/`) — Auth, Court Management,
   and scoped booking-defect regressions; headful locally, headless in CI via
@@ -153,7 +156,7 @@ everything built before it:
    fast; document what actually got built, not just what was planned.
 5. ~~**Testing suite**~~ — done (Postman → k6 → Playwright, in that
    order). Coverage is still partial (Auth module only for Playwright;
-   not every endpoint in Postman/k6 yet) — that's ongoing work, not
+   all current business endpoints covered by PR-35 Postman; k6 remains partial) — that's ongoing work, not
    scaffolding.
 6. ~~**CI/CD**~~ — done (GitHub Actions: Development/QA/Main, plus
    branch protection on `main`). PRs are no longer skipped.

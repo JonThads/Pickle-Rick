@@ -1,79 +1,101 @@
 # Postman / Newman Suite
 
-Smoke and sanity suite for the Pickle Rick API, run through
-[Newman](https://github.com/postmanlabs/newman) (Postman's CLI runner)
-against a local `docker compose up --build` stack.
+PR-35 smoke/sanity coverage for all **23 implemented business endpoints**:
+147 requests and 366 assertions. Health, metrics and uploaded-file retrieval
+are also exercised. The API currently mounts `/api`, not the planned `/api/v1`.
+Purchasing and analytics endpoints do not exist yet and are outside this suite.
 
-This directory currently ships **scaffolding only** — a runnable, empty
-collection, plus a working teardown. No requests exist yet; adding them is
-tracked separately (see `docs/roadmap.md` and Jira PR-35). See
-[`docs/specs/2026-08-08-postman-newman-scaffolding-design.md`](../../docs/specs/2026-08-08-postman-newman-scaffolding-design.md)
-for the full rationale behind every decision below (referenced as D1–D8).
+## Setup and run
 
-## Setup
+Start the stack from the repository root with `docker compose up --build`
+(attached so logs stay visible), then in another terminal:
 
-```bash
+```powershell
 cd testing/postman
 npm ci
-cp environments/local.postman_environment.example.json environments/local.postman_environment.json
+Copy-Item environments/local.postman_environment.example.json environments/local.postman_environment.json
+npm test
 ```
 
-The stack must be running first: `docker compose up --build` from the repo
-root.
+| Command | Purpose |
+| --- | --- |
+| `npm test` | Offline checks, Newman, then SQL/file cleanup even after assertion/startup failures |
+| `npm run check` | Route coverage, assertion/state guards and nine runner/teardown tests; no stack needed |
+| `npm run teardown` | Recover reserved Postman accounts and manifested uploads after interruption |
 
-## Running
+The environment contains only `baseUrl`. Accounts, passwords, JWTs, IDs,
+test location and tomorrow's booking date are generated at runtime. Tokens
+from **login** authenticate later requests. Exported collection variables
+are empty. The ignored `newman/report.html` omits request/response bodies
+and headers; it must still be treated as local test output.
 
-```bash
-npm test        # runs the collection via scripts/run.js, then always tears down
-npm run teardown # runs cleanup on its own, without running the collection
+If running a named Compose stack, select it explicitly. Its API URL and
+database project must refer to the same stack:
+
+```powershell
+$env:COMPOSE_PROJECT_NAME = 'pickle-rick-pr35'
+$env:POSTMAN_BASE_URL = 'http://localhost:4035'
+npm test
 ```
 
-`npm test` drives Newman through its Node API rather than the bare CLI, so
-teardown runs in a `finally` block — on a passing run, a failing assertion,
-or a thrown exception alike (D6).
+`POSTMAN_BASE_URL` overrides the environment's URL without editing the file.
+The runner checks that the selected Compose project's Postgres is running
+before sending API requests. Cleanup resolves Compose from the repository
+root; `COMPOSE_PROJECT_NAME` is inherited by Docker. This suite is intended
+only for the local development stack, with disposable test accounts.
 
-## The `runId` convention
+## Coverage and order
 
-A collection-level pre-request script mints one `runId` per run and stores
-it as a collection variable. Every account this suite ever registers must be
-addressed as:
+Run the **entire collection in order**, with one iteration. Individual
+folders depend on accounts, tokens and resources created earlier.
 
-```
-pm-{{runId}}-<role>@picklerick.test
-```
+| Folder | Coverage / requirement traces |
+| --- | --- |
+| Smoke | Health and Prometheus response contracts |
+| Auth | Register/login for both roles, duplicate/invalid/missing input, unauthenticated access, profile update, multipart photo upload/retrieval, password-confirmed deletion and stale tokens (BR-01/02/08, FR-01/12, UC-01/02/06) |
+| Court Management | Manual/auto creation, duplicate name, role checks, owned lists, location filter, 24-slot availability (BR-04/05, FR-02, UC-03) |
+| Player Bookings | Auto/manual creation, duplicate own request, approved-slot conflict, missing input, own list, foreign cancellation rejection (BR-03/06, FR-03–06) |
+| Booking Acceptance | Owner approval/cancellation, foreign-admin read/approve/cancel rejection and unchanged pending status, wrong-role rejection, approved-slot availability (BR-04/05, FR-04/06, UC-05-02) |
+| Pasalo | Join, incoming/outgoing, foreign responder, acceptance/rejection, seven joiners plus owner, join and approval rejection at capacity (FR-07/08, Pasalo Rules) |
+| Items | CRUD, foreign admin/player rejection, wrong-court item, unchanged stock after forbidden writes, persisted edits/deletion (BR-07, FR-10, UC-04) |
+| Cleanup | Delete remaining accounts via API and verify tokens return 401; admin deletion cascades courts, bookings, join requests and inventory (BR-08, FR-12, UC-06) |
 
-This single convention is what makes teardown safe and idempotent (D3):
+The multiple-pending-manual-booking requirement remains disputed in the source
+docs; this suite does not decide it. It tests a single pending request and
+rejection once approved. Sequential cap checks do not establish concurrent
+Pasalo approval safety.
 
-- Cleanup matches rows by the literal `pm-` email prefix, so it cannot touch
-  a row a human created by hand.
-- Two runs (or a Postman run overlapping a Playwright run) get different
-  `runId`s and never collide on the `users.email` unique constraint.
-- A crashed or Ctrl+C'd run still leaves its rows carrying the `pm-` prefix,
-  so the *next* `npm run teardown` sweeps them up. Cleanup is retroactive,
-  not dependent on any one run exiting cleanly.
+## Cleanup and isolation
 
-## Adding a request
+Emails use `pm-<UUID>-<account>@picklerick.test`. Reserve this namespace
+for automated tests. Normal Newman runs scope SQL fallback to **their UUID**;
+standalone recovery sweeps the reserved namespace, so do not run recovery
+while another Postman run is active. Children are deleted before parents
+to respect `order_items.item_id`'s `ON DELETE RESTRICT` constraint.
 
-When it's time to add real requests (out of scope for this scaffold — see
-D7), add them into the matching empty folder (`Auth`, `Court Management`,
-`Player Bookings`, `Booking Acceptance`, `Pasalo`, or `Smoke`), following the
-`Ref No` naming from `testing/test-cases/Pickle Rick Test Cases.xlsx` per
-`docs/claude-instructions.md`. Capture tokens/IDs into the existing
-collection variables (`authToken`, `courtId`, `bookingId`) rather than
-hardcoding them, and register any new test accounts under the `runId`
-convention above.
+Photo upload uses `fixtures/avatar.svg`. Before upload, the runner records the
+disposable uploader ID in ignored `newman/uploads-<UUID>.json`. Cleanup removes
+only SVG uploads belonging to that exact test user, including failed uploads.
+Account deletion does not delete physical photo files. SQL and file cleanup
+are both attempted; either failure makes `npm test` fail. No volume reset
+or deletion of unrelated users/uploads is performed.
 
-## Teardown limitations
+Ctrl+C/process termination can bypass `finally`. Run `npm run teardown` against
+the same Compose project afterward. The manifest is written before
+any upload, so recovery also handles failed or interrupted upload responses.
 
-Teardown goes through `docker compose exec ... psql` rather than an API
-endpoint (D4), because no `DELETE` route exists that could remove only test
-rows. It deletes children before parents (D5) rather than relying on the
-`users` row's `ON DELETE CASCADE`, because `order_items.item_id` is
-`ON DELETE RESTRICT` in `db/schema.sql` — a bare cascade delete would abort
-with a foreign-key violation the moment any order references one of those
-items.
+For Postman desktop, import the collection and example environment and set
+the working directory to `testing/postman` so `fixtures/avatar.svg` resolves.
+The final Cleanup folder removes database records, but Postman desktop cannot
+delete server-side photo files. Use `npm test` for automatic file cleanup;
+after a desktop run, remove the exact uploaded test file identified by `photoUrl`.
+Bare `newman run` also bypasses the wrapper's failure/file cleanup.
 
-**Known gap:** `finally` does not run on `SIGINT`, so Ctrl+C during `npm
-test` skips teardown for that run. This is why `npm run teardown` stays
-independently callable, and why the `runId`/`pm-` prefix scheme makes
-cleanup retroactive rather than one-shot.
+## Schema note
+
+PR-35 exposed that `booking_players.status VARCHAR(10)` cannot store the
+11-character `disapproved` state. `db/schema.sql` now uses `VARCHAR(11)`.
+Existing initialized databases retain the old column width. Verification used
+a new isolated Compose database; use the project's agreed schema-update
+process before expecting rejection tests to pass against an older database.
+Do not reset a volume containing intentional data without authorization.
