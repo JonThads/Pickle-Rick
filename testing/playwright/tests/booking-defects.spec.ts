@@ -83,7 +83,9 @@ test('BUG-13-001: stale player availability cannot request an approved slot', as
     const response = page.waitForResponse(r => r.url() === `${apiBase}/bookings` && r.request().method() === 'POST');
     await slot.click();
     expect((await response).status()).toBe(409);
-    await expect(page.locator('.error-banner')).toHaveText('This slot is already approved');
+    // PR-117: the Player dashboard reports errors in a floating toast
+    // (role="alert") instead of the old top-of-page .error-banner.
+    await expect(page.getByRole('alert').locator('.toast-message')).toHaveText('This slot is already approved');
     const mine = await call(request, '/bookings/mine', data.competitor);
     expect((await mine.json()).bookings).toEqual([]);
 });
