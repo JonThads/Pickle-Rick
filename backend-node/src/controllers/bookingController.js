@@ -210,6 +210,12 @@ async function requestToJoin(req, res, next) {
             return res.status(409).json({ error: 'This booking already has the maximum of 8 players' });
         }
 
+        // PR-118: explicit message instead of the generic duplicate-entry 409.
+        const existing = await Booking.findJoinRequestsByPlayerForBookings(req.user.id, [id]);
+        if (existing.length > 0) {
+            return res.status(409).json({ error: 'You have already requested to join this booking' });
+        }
+
         const joinRequest = await Booking.requestToJoinBooking(id, req.user.id);
         res.status(201).json({ joinRequest });
     } catch (error) {

@@ -257,6 +257,25 @@ async function countApprovedPlayers(bookingId) {
     return result.rows[0].count;
 }
 
+/**
+ * This player's own join requests (any status) among the given bookings.
+ * Lets the availability endpoint show "Requested"/"Declined" instead of
+ * "Join (Pasalo)" - booking_players is UNIQUE(booking_id, player_id), so a
+ * second request (even after a rejection) can never succeed. (PR-118)
+ */
+
+async function findJoinRequestsByPlayerForBookings(playerId, bookingIds) {
+    if (bookingIds.length === 0) return [];
+    const result = await pool.query(
+        `SELECT booking_id, status
+         FROM booking_players
+         WHERE player_id = $1 AND booking_id = ANY($2::uuid[])`,
+        [playerId, bookingIds]
+    );
+
+    return result.rows;
+}
+
 async function requestToJoinBooking(bookingId, playerId) {
     const result = await pool.query(
         `INSERT INTO booking_players (booking_id, player_id, status)
@@ -293,6 +312,7 @@ async function findJoinRequestById(bookingPlayerId) {
 
 module.exports = {
   MAX_PLAYERS_PER_BOOKING,
+  findJoinRequestsByPlayerForBookings,
   createBooking,
   findBookingsForCourtOnDate,
   findBookingsForCourtOnDateDetailed,
