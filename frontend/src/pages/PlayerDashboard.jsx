@@ -8,7 +8,28 @@ import Avatar from '../components/Avatar.jsx';
 import PlayerSlots from '../components/PlayerSlots.jsx';
 import CourtLinePattern from '../components/CourtLinePattern.jsx';
 import PickleballWatermark from '../components/PickleballWatermark.jsx';
+import Toast from '../components/Toast.jsx';
 import { todayKey } from '../utils/date.js';
+
+// Maps raw API error strings to short, player-friendly copy. Unknown
+// messages pass through unchanged so nothing is ever hidden.
+function friendlyError(message) {
+  if (!message) return message;
+  if (message.includes('duplicate entry')) {
+    return "You've already requested this slot. Wait for the booking owner to respond.";
+  }
+  if (message.includes('maximum of 8 players')) {
+    return 'This booking is full (8/8 players), so no more players can be added.';
+  }
+  return message;
+}
+
+function errorTitle(message) {
+  if (!message) return undefined;
+  if (message.includes('duplicate entry') || message.includes('already requested')) return 'Already requested';
+  if (message.includes('maximum of 8 players')) return 'Booking is full';
+  return 'Something went wrong';
+}
 
 // "Approved" and "Pending" both read as wax-seal stamps; "Cancelled" reads
 // as the hazard-red stamp - same wax-seal-vs-hazard split used on the
@@ -36,6 +57,8 @@ const SLOT_LABELS = {
   requestable: 'Request',
   approved: 'Join (Pasalo)',
   'mine-pending': 'Requested',
+  'mine-join-pending': 'Requested',
+  'mine-join-disapproved': 'Declined',
   'mine-approved': 'Booked',
 };
 
@@ -67,9 +90,7 @@ function groupConsecutiveBookings(bookings) {
       last.endHour = booking.start_hour + 1;
       last.hours.push(booking.start_hour);
       last.ids.push(booking.id);
-      for (const p of booking.players || []) {
-        if (!last.players.some((existing) => existing.player_id === p.player_id)) last.players.push(p);
-      }
+      last.hourRosters.push({ hour: booking.start_hour, players: booking.players || [] });
     } else {
       blocks.push({
         court_id: booking.court_id,
@@ -80,7 +101,11 @@ function groupConsecutiveBookings(bookings) {
         endHour: booking.start_hour + 1,
         hours: [booking.start_hour],
         ids: [booking.id],
-        players: [...(booking.players || [])],
+        // PR-119: the 8-player cap and Pasalo approvals are per hour (each
+        // hour is its own booking row), so the roster is kept per hour
+        // instead of unioned - a union could read "9/8" even though no
+        // single hour exceeds 8.
+        hourRosters: [{ hour: booking.start_hour, players: booking.players || [] }],
       });
     }
   }
@@ -170,7 +195,7 @@ export default function PlayerDashboard() {
     // Already-confirmed/requested slots don't trigger a new API call -
     // clicking just expands an inline panel showing who's playing (or, for
     // a still-pending request, a reminder that it's awaiting approval).
-    if (slot.status === 'mine-pending' || slot.status === 'mine-approved') {
+    if (['mine-pending', 'mine-approved', 'mine-join-pending', 'mine-join-disapproved'].includes(slot.status)) {
       setExpandedHour((h) => (h === slot.startHour ? null : slot.startHour));
       return;
     }
@@ -205,7 +230,7 @@ export default function PlayerDashboard() {
       <span className="label-tag">PLAYER DASHBOARD</span>
       <h2>Find a court</h2>
 
-      {error && <div className="error-banner">{error}</div>}
+      <Toast title={errorTitle(error)} message={friendlyError(error)} onClose={() => setError(null)} />
 
       <div style={{ display: 'flex', gap: '0.5rem', maxWidth: 320, marginBottom: '1.5rem' }}>
         <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location, e.g. Davao" />
@@ -223,8 +248,12 @@ export default function PlayerDashboard() {
             />
 
             {selectedCourt?.id === court.id && (
-              <div className="card motif-card" style={{ marginTop: '0.5rem', padding: 0 }}>
-                <div style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+              /* PR-116: overflow: visible overrides .motif-card's clipping -
+                 the calendar popover opens below the date button and would
+                 otherwise be cut off at the card edge. The court-line SVG is
+                 sized 100% of the card, so it can't spill anyway. */
+              <div className="card motif-card" style={{ marginTop: '0.5rem', padding: 0, overflow: 'visible' }}>
+                <div style={{ padding: '1.25rem', position: 'relative' }}>
                   <CourtLinePattern lines="both" />
                   <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
                     <button type="button" className="secondary" onClick={() => setShowCalendar((s) => !s)}>
@@ -266,7 +295,11 @@ export default function PlayerDashboard() {
                 {expandedSlot && (
                   <div className="accordion-body" style={{ borderTop: '1px solid var(--color-border)', marginTop: '1rem', paddingTop: '1rem' }}>
                     <p className="label-tag" style={{ marginBottom: '0.5rem' }}>
-                      {formatHour(expandedSlot.startHour)} - {expandedSlot.status === 'mine-pending' ? 'awaiting admin approval' : 'players in this booking'}
+                      {formatHour(expandedSlot.startHour)} - {{
+                        'mine-pending': 'awaiting admin approval',
+                        'mine-join-pending': 'awaiting approval from the booking owner',
+                        'mine-join-disapproved': 'the booking owner declined your request',
+                      }[expandedSlot.status] || 'players in this booking'}
                     </p>
                     {expandedSlot.status === 'mine-approved' && (
                       <PlayerSlots
@@ -297,8 +330,13 @@ export default function PlayerDashboard() {
             </p>
             <span className="label-tag">{block.hours.length} hour{block.hours.length > 1 ? 's' : ''}</span>
             {block.status === 'approved' && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <PlayerSlots owner={{ full_name: user.full_name, photo_url: user.photo_url }} players={block.players} />
+              <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {block.hourRosters.map((roster) => (
+                  <div key={roster.hour}>
+                    <span className="label-tag">{formatHour(roster.hour)}</span>
+                    <PlayerSlots owner={{ full_name: user.full_name, photo_url: user.photo_url }} players={roster.players} />
+                  </div>
+                ))}
               </div>
             )}
           </div>
