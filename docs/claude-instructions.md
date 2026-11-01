@@ -138,6 +138,26 @@ For Pull Requests:
 
 Check out a new branch in your repo, using the work item key in the branch name. For example, git checkout -b JRA-123-<branch-name></branch>.When you create a pull request, use the work item key in the pull request title.
 
+### Jira Board Hygiene
+
+The Jira board (project `PR`, https://pickle-rick.atlassian.net) is the
+source of truth for what is being worked on. **Every task gets a ticket,
+and the ticket's status is updated as the work moves** — do not leave it
+for a later cleanup pass:
+
+| Moment | Jira action |
+| --- | --- |
+| A task, bug or follow-up is identified | Create the ticket first (Bug / Task / Story / Spike), before coding |
+| Work starts, branch created | Move to **In Development** |
+| PR opened / ready to verify | Move to **For Testing**, comment the PR link |
+| PR merged into `qa` and promoted to `main` | Move to **Done**, comment the PR links and how it was verified |
+| Work is deferred or split out | Create a new ticket for the remainder and mention it in the old one; never leave it only in chat |
+| A fix causes data loss or a regression | Create a Bug ticket for the root cause |
+
+Workflow statuses: To Do, In Development, For Testing, Done. Use the
+ticket key in the branch name, commit messages and PR title (see above).
+At the end of every working session, check the board matches reality.
+
 ### Conventional Comments
 
 Use the standards established in [conventionalcomments.org](https://conventionalcomments.org/)

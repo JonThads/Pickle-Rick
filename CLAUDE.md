@@ -105,3 +105,13 @@ resolves it before guessing — it's the most detailed of the five.
   `docs/claude-instructions.md`) are live. Merges into `qa` and `main` go
   through pull requests gated by these pipelines' required status
   checks, not manual merges.
+
+## Jira board
+
+- **Every task gets a Jira ticket (project `PR`) and the board must be kept
+  up to date as the work moves**: create the ticket before coding, move it
+  to In Development when the branch starts, For Testing when the PR is
+  open, Done once merged to `qa`/`main`. Comment the PR links on the
+  ticket, and open a new ticket for anything deferred. Check the board
+  matches reality before ending a session. See "Jira Board Hygiene" in
+  `docs/claude-instructions.md`.
