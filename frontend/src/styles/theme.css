@@ -173,6 +173,60 @@ select {
   font-size: 0.9rem;
 }
 
+/* Floating error/warning toast (components/Toast.jsx). Fixed so it stays in
+   view wherever the user has scrolled. */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: min(380px, calc(100vw - 2rem));
+  padding: 0.85rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-hazard);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(28, 35, 29, 0.22);
+  animation: toast-in 0.2s ease-out;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--color-hazard);
+  color: #ffffff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.toast-body { flex: 1; }
+.toast-title { display: block; font-size: 0.95rem; }
+.toast-message { margin: 0.15rem 0 0; font-size: 0.875rem; color: var(--color-ink-muted); }
+
+.toast .toast-close {
+  background: transparent;
+  color: var(--color-ink-muted);
+  box-shadow: none;
+  padding: 0 0.25rem;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}
+
 /* Reduced-motion users skip the hover lift on buttons/cards. */
 @media (prefers-reduced-motion: reduce) {
   button {
@@ -483,6 +537,8 @@ select {
 }
 
 .slot-button.mine-pending,
+.slot-button.mine-join-pending,
+.slot-button.mine-join-disapproved,
 .slot-button.mine-approved {
   background: var(--color-court-green);
   color: #ffffff;

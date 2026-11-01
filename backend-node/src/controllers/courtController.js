@@ -107,6 +107,13 @@ async function getAvailability(req, res, next) {
 
         const detailed = await Booking.findBookingsForCourtOnDateDetailed(courtId, date);
 
+        // PR-118: my own Pasalo requests on this day's approved bookings, so a
+        // slot I already asked to join isn't offered as "Join (Pasalo)" again.
+        const myJoinRequests = await Booking.findJoinRequestsByPlayerForBookings(
+            req.user.id,
+            detailed.filter((b) => b.status === 'approved').map((b) => b.id)
+        );
+
         const slots = [];
         for (let startHour = 0; startHour < 24; startHour++) {
             const approved = detailed.find((b) => b.start_hour === startHour && b.status === 'approved');
@@ -125,7 +132,14 @@ async function getAvailability(req, res, next) {
                 if (isOwner || isJoinedPlayer) {
                     slots.push({ startHour, status: 'mine-approved', bookingId: approved.id, ...roster });
                 } else {
-                    slots.push({ startHour, status: 'approved', bookingId: approved.id, ...roster });
+                    const myRequest = myJoinRequests.find((r) => r.booking_id === approved.id);
+                    // A pending/disapproved request still occupies the unique
+                    // (booking_id, player_id) row, so re-requesting would 409.
+                    const status =
+                        myRequest?.status === 'pending' ? 'mine-join-pending'
+                        : myRequest?.status === 'disapproved' ? 'mine-join-disapproved'
+                        : 'approved';
+                    slots.push({ startHour, status, bookingId: approved.id, ...roster });
                 }
             } else if (myPendingBooking) {
                 slots.push({ startHour, status: 'mine-pending' });
