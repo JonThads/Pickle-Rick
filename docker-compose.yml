@@ -18,7 +18,8 @@ services:
       POSTGRES_PASSWORD: pickle_rick_pw
       POSTGRES_DB: pickle_rick
     ports:
-      - '5432:5432'
+      # NFR-03: local development services must not be published to the LAN.
+      - '127.0.0.1:5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Postgres automatically runs any .sql file in this folder ONCE, the
@@ -34,7 +35,7 @@ services:
   backend-node:
     build: ./backend-node
     ports:
-      - '4000:4000'
+      - '127.0.0.1:4000:4000'
     environment:
       PORT: 4000
       DATABASE_URL: postgresql://pickle_rick:pickle_rick_pw@postgres:5432/pickle_rick
@@ -66,7 +67,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - '5173:5173'
+      - '127.0.0.1:5173:5173'
     environment:
       VITE_API_URL: http://localhost:4000
       VITE_ANALYTICS_URL: http://localhost:5000
@@ -88,7 +89,7 @@ services:
       # local dev, would NOT be fine if this container were ever exposed.
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
-      - '5050:80'
+      - '127.0.0.1:5050:80'
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     depends_on:
@@ -98,7 +99,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - '9090:9090'
+      - '127.0.0.1:9090:9090'
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
@@ -107,7 +108,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
