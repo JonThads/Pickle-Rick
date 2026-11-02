@@ -163,6 +163,18 @@ everything built before it:
 
 ---
 
+## 4. Upcoming initiatives (proposed 2026-11-01, not yet approved)
+
+- **Cloud platform (Supabase + Vercel)** — see
+  [migration plan](plans/2026-11-01-supabase-vercel-migration-plan.md) and
+  [deploy timing analysis](plans/2026-11-01-deploy-timing-analysis.md).
+  Recommendation: private QA first, public production at the MVP gate (`v1.2.0`).
+- **Pickle Rick 2.0** (frontend redesign, "What's new" release history),
+  agile working agreement, and the systems-thinking learning track — see
+  [2.0 initiative](plans/2026-11-01-pickle-rick-2-0-initiative.md).
+
+---
+
 *Cross-reference: [business-requirements.md](business-requirements.md),
 [business-rules.md](business-rules.md),
 [software-requirements-specification.md](software-requirements-specification.md),
