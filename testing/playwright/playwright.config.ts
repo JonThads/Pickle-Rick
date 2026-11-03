@@ -45,7 +45,7 @@ export default defineConfig({
     trace: 'on-first-retry',
 
     /* Run headful by default — practicing/observing automation is the point of this
-       project's Playwright suite, not just a pass/fail result (see docs/claude-instructions.md).
+       project's Playwright suite, not just a pass/fail result (see docs/workflow/claude-instructions.md).
        GitHub Actions runners have no display though, so CI forces headless the same way
        `forbidOnly`/`retries` above already branch on process.env.CI - see PR-46. */
     headless: !!process.env.CI,

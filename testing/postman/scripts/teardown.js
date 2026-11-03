@@ -12,7 +12,7 @@
 //     with a foreign-key violation the moment any order references one (D5).
 // Deletion order below is children-first for exactly that reason.
 //
-// See docs/specs/2026-08-08-postman-newman-scaffolding-design.md D4/D5.
+// See docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md D4/D5.
 
 const { spawn } = require('child_process');
 const fs = require('node:fs/promises');
