@@ -47,9 +47,9 @@ load/stability claim. No Playwright or k6 run was needed for this backend change
 - User volumes were preserved. Services were started attached for verification
   and stopped afterward to restore their initial stopped state.
 - Work starts from `origin/qa` on `fix/PR-123-atomic-pasalo-approval`.
-  The pushed `docs/PR-134-documentation-structure` branch was left unchanged.
-  It is not merged into the fix. Its documentation moves and independently
-  created changelog will need normal reconciliation when both branches merge.
+  Initially the pushed `docs/PR-134-documentation-structure` branch was left
+  separate. After manual acceptance, its changes were integrated into the fix
+  branch, preserving the documentation reorganization and both changelog entries.
 
 ## Follow-up verification alongside the user's manual test
 

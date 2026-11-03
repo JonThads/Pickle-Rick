@@ -3,7 +3,7 @@
 # =============================================================================
 # Shared by qa.yml and main.yml so both pipelines stand up the exact same
 # Docker stack and run the exact same suites - see PR-46/PR-47 in Jira and
-# docs/claude-instructions.md §GitHub §Actions. Kept as `workflow_call`
+# docs/workflow/claude-instructions.md §GitHub §Actions. Kept as `workflow_call`
 # rather than copy-pasted into both files so a change to "how we stand up
 # the stack" only has to happen once.
 #
@@ -53,7 +53,7 @@ jobs:
 
       # --- Stack --------------------------------------------------------------
       # Deliberately `docker compose up --build -d` (detached), NOT the
-      # non-detached local-dev invocation docs/claude-instructions.md
+      # non-detached local-dev invocation docs/workflow/claude-instructions.md
       # describes. That policy is about a human watching logs on their own
       # machine; a GitHub-hosted runner has no one watching a terminal, so
       # detached is correct here - the same reasoning that makes
@@ -85,7 +85,7 @@ jobs:
       # `npm test` (scripts/run.js) drives Newman through its Node API so
       # teardown always runs in a `finally` block - pass, assertion
       # failure, or thrown exception alike (see
-      # docs/specs/2026-08-08-postman-newman-scaffolding-design.md D6).
+      # docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md D6).
       # Nothing extra is needed here for "clean up test data after every
       # run" - it's already built into the suite.
       - name: Run Postman/Newman suite (with built-in teardown)
@@ -111,7 +111,7 @@ jobs:
 
       # ⚠️ Prerequisite this workflow assumes, not yet done: playwright.config.ts
       # currently hardcodes `headless: false` unconditionally, because
-      # project policy (docs/claude-instructions.md §Environment) is to run
+      # project policy (docs/workflow/claude-instructions.md §Environment) is to run
       # Playwright headful LOCALLY so automation stays observable. PR-46's
       # own description says headless in CI does not violate that policy -
       # CI has no display to watch. `forbidOnly`/`retries` in that same

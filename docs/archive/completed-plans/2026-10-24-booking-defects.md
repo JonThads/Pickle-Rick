@@ -1,5 +1,12 @@
 # Remaining defects implementation plan
 
+> **Archived 2026-11-03 (PR-134): historical implementation plan.** The work
+> and execution ledger below are retained for traceability. Old checkboxes,
+> permissions, branches, and instructions are not current authorization.
+> See the [verification report](../../verification/2026-10-24-remaining-bugs.md)
+> for recorded outcomes, failures, and limitations, and the
+> [current workflow](../../workflow/CODEX-INSTRUCTIONS.md) before new work.
+
 **Goal:** Complete PR-12, PR-13, PR-15 and PR-16, verify locally against Docker, then merge through gated PRs into qa and main.
 
 **Architecture:** Express controllers authorize and enforce business rules; raw SQL models own transactions on dedicated pool clients. Serialize booking creation and approval on the court row so an approval cannot race a new pending insertion. Keep the partial approved-slot unique index.

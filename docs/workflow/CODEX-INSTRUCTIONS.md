@@ -1,7 +1,7 @@
 # Pickle Rick — Codex Instructions
 
 Use this guide to carry out focused, verifiable work in this repository.
-Project purpose, architecture, and core conventions live in [AGENTS.md](../AGENTS.md).
+Project purpose, architecture, and core conventions live in [AGENTS.md](../../AGENTS.md).
 This guide adds a task workflow; it does not redefine product requirements.
 
 ## 1. Start with the requested outcome
@@ -25,11 +25,11 @@ understood well enough to make a scoped change.
 
 | Question | Source |
 | --- | --- |
-| What should the product do? | [Business Requirements](business-requirements.md), [Business Rules](business-rules.md), [SRS](software-requirements-specification.md), [Use Cases](use-case-specification.md), and explicit user decisions |
+| What should the product do? | [Business Requirements](../requirements/business-requirements.md), [Business Rules](../requirements/business-rules.md), [SRS](../requirements/software-requirements-specification.md), [Use Cases](../requirements/use-case-specification.md), and explicit user decisions |
 | What exists now? | Current source, schema, configuration, and tests; executed checks establish runtime behavior |
-| What work is planned, and why? | [Roadmap](roadmap.md) and [Project Plan Overview](project-plan-overview.md); inspect snapshot dates before relying on status |
+| What work is planned, and why? | [Roadmap](../planning/roadmap.md) and [Project Plan Overview](../planning/project-plan-overview.md); inspect snapshot dates before relying on status |
 | What is the current ticket or PR status? | The connected Jira/GitHub record when available; local documents and remote-tracking refs can be stale |
-| What setup or commands are available? | [README](../README.md), package scripts, Docker Compose, and test configuration |
+| What setup or commands are available? | [README](../../README.md), package scripts, Docker Compose, and test configuration |
 
 Consult the Business Rules first when a requirement is ambiguous. If the rules,
 use cases, or user clarification still conflict, describe the specific conflict
@@ -115,6 +115,14 @@ do not present the disputed rule as settled.
   defect or agree an explicit tracking strategy before seeking a green merge.
 
 ## 7. Finish with evidence
+
+For every completed code, configuration, test, or documentation change, update
+the root [CHANGELOG.md](../../CHANGELOG.md) in the same change set. Summarize
+what changed and why, link Jira/PR references when available, and consolidate
+related edits under Unreleased until a real release is tagged. Follow the
+[documentation maintenance rule](claude-instructions.md#documentation-maintenance).
+Use the [documentation index](../README.md) for placement; archived plans
+preserve history and do not override current instructions.
 
 Inspect the final diff and working-tree status. Update implementation-status
 docs when behavior or tooling changes, keeping planned, implemented, and tested

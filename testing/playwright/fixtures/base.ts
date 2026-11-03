@@ -13,7 +13,7 @@ const SCREENSHOT_DIR = path.resolve(__dirname, '../screenshots');
  * order; this one depends on `page`, so its teardown runs BEFORE the page is
  * closed - which is what makes capturing the final on-screen state possible.
  *
- * Files are named after the test-case Ref No (docs/claude-instructions.md
+ * Files are named after the test-case Ref No (docs/workflow/claude-instructions.md
  * requires every test() title to start with one), so the "Screenshot" column
  * in Pickle Rick Test Cases.xlsx can reference them by a stable path.
  */
