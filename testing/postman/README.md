@@ -1,7 +1,8 @@
 # Postman / Newman Suite
 
 PR-35 smoke/sanity coverage for all **23 implemented business endpoints**:
-147 requests and 366 assertions. Health, metrics and uploaded-file retrieval
+151 requests and 374 assertions, including PR-92 deleted-account token checks.
+Health, metrics and uploaded-file retrieval
 are also exercised. The API currently mounts `/api`, not the planned `/api/v1`.
 Purchasing and analytics endpoints do not exist yet and are outside this suite.
 
