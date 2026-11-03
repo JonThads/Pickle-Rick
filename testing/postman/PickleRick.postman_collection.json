@@ -1933,6 +1933,134 @@
               }
             }
           ]
+        },
+        {
+          "name": "PR-92 — Deleted Token Cannot Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// PR-92 / PR-43 / NFR-03: reject a deleted account before reaching its controller.",
+                  "pm.test('status 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('response shape', () => {",
+                  "    pm.expect(pm.response.json().error)",
+                  "        .to.eql('Account no longer exists');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deleteToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "description": "PR-92 / PR-43 / BR-08, FR-12, UC-06, NFR-03: deleted-account tokens must be rejected by shared authentication. Run the complete collection in order."
+          }
+        },
+        {
+          "name": "PR-92 — Deleted Token Cannot List Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// PR-92 / PR-43 / NFR-03: reject a deleted account before reaching its controller.",
+                  "pm.test('status 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('response shape', () => {",
+                  "    pm.expect(pm.response.json().error)",
+                  "        .to.eql('Account no longer exists');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deleteToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/bookings/mine",
+            "description": "PR-92 / PR-43 / BR-08, FR-12, UC-06, NFR-03: deleted-account tokens must be rejected by shared authentication. Run the complete collection in order."
+          }
+        },
+        {
+          "name": "PR-92 — Deleted Token Cannot Update Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// PR-92 / PR-43 / NFR-03: reject a deleted account before reaching its controller.",
+                  "pm.test('status 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('response shape', () => {",
+                  "    pm.expect(pm.response.json().error)",
+                  "        .to.eql('Account no longer exists');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deleteToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Should be rejected\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/auth/me",
+            "description": "PR-92 / PR-43 / BR-08, FR-12, UC-06, NFR-03: deleted-account tokens must be rejected by shared authentication. Run the complete collection in order."
+          }
         }
       ]
     },
@@ -5387,6 +5515,46 @@
               }
             }
           ]
+        },
+        {
+          "name": "PR-92 — Deleted Admin Cannot List Courts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// PR-92 / PR-43 / NFR-03: reject a deleted account before reaching its controller.",
+                  "// PR-92 / BR-08, FR-12, UC-06, NFR-03:",
+                  "// The deleted admin's previously valid token must no longer grant access.",
+                  "pm.test('status 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('response shape', () => {",
+                  "    pm.expect(pm.response.json().error)",
+                  "        .to.eql('Account no longer exists');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/courts/mine",
+            "description": "PR-92 / PR-43 / BR-08, FR-12, UC-06, NFR-03: deleted-account tokens must be rejected by shared authentication. Run the complete collection in order.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
         },
         {
           "name": "Delete Account - adminTwo",

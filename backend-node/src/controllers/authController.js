@@ -127,12 +127,10 @@ async function me(req, res, next) {
     try {
         const user = await User.findUserById(req.user.id);
 
-        // A signed token outlives the account it points at: JWTs are stateless,
-        // so deleting a user (DELETE /me) can't revoke tokens already issued to
-        // them. Without this guard the endpoint answers 200 {"user": null},
-        // which reads as "logged in" to the frontend and leaves a ghost session
-        // that can't be clicked out of. 401 is what AuthContext already treats
-        // as "log out", so a deleted account resolves itself on next page load.
+        // PR-92 / BR-08, FR-12, UC-06:
+        // requireAuth already rejects tokens belonging to deleted accounts.
+        // Keep this defensive check in case deletion happens between the
+        // middleware lookup and this controller's lookup.
         if (!user) {
             return res.status(401).json({ error: 'Account no longer exists' });
         }
