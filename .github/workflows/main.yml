@@ -3,7 +3,7 @@
 # =============================================================================
 # Jira: PR-47. Everything the QA pipeline runs, plus a k6 smoke run against
 # thresholds, a secrets scan over the diff, and a Docker image build check -
-# see docs/claude-instructions.md §GitHub §Actions and CLAUDE.md §Git
+# see docs/workflow/claude-instructions.md §GitHub §Actions and CLAUDE.md §Git
 # ("qa -> main once stable").
 #
 # Same pull_request / push split as qa.yml, for the same reason (PR-70):

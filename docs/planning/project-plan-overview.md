@@ -1,8 +1,15 @@
 # Pickle Rick — Project Plan Overview
 
+> **Historical delivery snapshot — reorganized 2026-11-03 (PR-134).**
+> The dated baseline and later annotations below preserve planning rationale,
+> traceability, and past findings. Claims such as missing README, open defects,
+> or pending merges may be superseded. Check current source and live Jira/GitHub
+> before using them as today's status. See the [roadmap](roadmap.md),
+> [changelog](../../CHANGELOG.md), and [documentation index](../README.md).
+
 **Prepared:** 09 August 2026
-**Purpose:** Single source of truth for what is built, what is left, and how
-the remaining work maps to a Jira board.
+**Purpose:** Delivery rationale and a dated traceability/backlog snapshot of
+what was built, what remained, and how that work mapped to Jira.
 **Verified against:** the working tree at commit `ef72be2` (branch `qa`) —
 every status below was checked against actual code, schema, and config, not
 inferred from the requirement docs.
@@ -16,7 +23,7 @@ ownership, approved-slot and eight-player negatives, login token reuse, API
 cleanup and SQL/file fallback. Two full Newman runs and a forced-failure
 cleanup experiment passed their expected outcomes. This supersedes the older
 Postman snapshot below without rewriting its dated history. See
-[verification](verification/2026-10-24-PR-35-postman.md). PR-56 versioning has
+[verification](../verification/2026-10-24-PR-35-postman.md). PR-56 versioning has
 not landed; requests continue to use `/api`. The suite exposed and fixes
 `booking_players.status` being too short for `disapproved` in `db/schema.sql`.
 
@@ -218,7 +225,7 @@ original findings. PR-14 is merged into qa/main (GitHub #14/#15) and Done in
 Jira. PR-12, PR-13, PR-15 and PR-16 are implemented on
 `fix/PR-12-booking-defects`, with 12 passing Docker API/database regressions
 and headed Chromium UI coverage; promotion still requires remote PR checks.
-See [verification and limitations](verification/2026-10-24-remaining-bugs.md).
+See [verification and limitations](../verification/2026-10-24-remaining-bugs.md).
 
 These are **not** roadmap items — they are existing code behaving against a
 documented rule. Listed most severe first.
@@ -248,7 +255,7 @@ Remediation approved for promotion (2026-10-24):
 `fix/PR-14-unique-court-names` adds a per-admin unique index and a friendly
 409 response. Headed local Playwright and API acceptance checks passed;
 the user approved promotion and remote PR gates remain required. See
-[PR-14 local verification](verification/2026-10-24-PR-14-court-name-fix.md).
+[PR-14 local verification](../verification/2026-10-24-PR-14-court-name-fix.md).
 
 **DEF-4 — Approval is not atomic.**
 `approveBooking` runs `updateBookingStatus` then
@@ -539,8 +546,8 @@ next reader is not told about a bug that no longer exists.
 
 ---
 
-*Cross-reference: [business-requirements.md](business-requirements.md),
-[business-rules.md](business-rules.md),
-[software-requirements-specification.md](software-requirements-specification.md),
-[use-case-specification.md](use-case-specification.md),
-[claude-instructions.md](claude-instructions.md), [roadmap.md](roadmap.md).*
+*Cross-reference: [business-requirements.md](../requirements/business-requirements.md),
+[business-rules.md](../requirements/business-rules.md),
+[software-requirements-specification.md](../requirements/software-requirements-specification.md),
+[use-case-specification.md](../requirements/use-case-specification.md),
+[claude-instructions.md](../workflow/claude-instructions.md), [roadmap.md](roadmap.md).*

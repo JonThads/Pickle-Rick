@@ -236,25 +236,35 @@ async function respondToJoinRequest(req, res, next) {
         const { joinRequestId } = req.params;
         const { approve } = req.body;
 
-        const joinRequest = await Booking.findJoinRequestById(joinRequestId);
-        if (!joinRequest) {
-            return res.status(404).json({ error: 'Join request not found' });
-        }
-
-        const booking = await Booking.findBookingById(joinRequest.booking_id);
-        if (booking.booked_by !== req.user.id) {
-            return res.status(403).json({ error: 'You do not have permission to approve/disapprove this join request' });
-        }
-
-        if (approve) {
-            const approvedCount = await Booking.countApprovedPlayers(joinRequest.booking_id);
-            if (approvedCount >= Booking.MAX_PLAYERS_PER_BOOKING - 1) {
-                return res.status(409).json({ error: 'This booking already has the maximum of 8 players' });
+        // PR-123 / FR-08 / NFR-01: all decisions use the same booking lock
+        // and connection, including rejections racing an approval. The owner
+        // comes from the verified token, never a client-supplied user ID.
+        const outcome = await Booking.withLockedJoinRequest(joinRequestId, async ({ client, booking, joinRequest }) => {
+            if (!booking || !joinRequest) {
+                return { status: 404, body: { error: 'Join request not found' } };
             }
-        }
+            if (booking.booked_by !== req.user.id) {
+                return { status: 403, body: { error: 'You do not have permission to approve/disapprove this join request' } };
+            }
+            if (joinRequest.status !== 'pending') {
+                return { status: 409, body: { error: 'This join request is no longer pending' } };
+            }
 
-        const updated = await Booking.respondToJoinRequest(joinRequestId, Boolean(approve));
-        res.json({ joinRequest: updated });
+            if (approve) {
+                // COUNT includes joiners only; reserve the eighth place for
+                // the original booker (FR-08 / Pasalo Rules).
+                const approvedCount = await Booking.countApprovedPlayers(booking.id, client);
+                if (approvedCount >= Booking.MAX_PLAYERS_PER_BOOKING - 1) {
+                    return { status: 409, body: { error: 'This booking already has the maximum of 8 players' } };
+                }
+            }
+            const updated = await Booking.respondToJoinRequest(joinRequestId, Boolean(approve), client);
+            if (!updated) {
+                return { status: 409, body: { error: 'This join request is no longer pending' } };
+            }
+            return { status: 200, body: { joinRequest: updated } };
+        });
+        res.status(outcome.status).json(outcome.body);
     } catch (error) {
         next(error);
     }

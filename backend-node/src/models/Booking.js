@@ -6,7 +6,7 @@
 
 const pool = require('../config/db');
 
-const MAX_PLAYERS_PER_BOOKING = 8; // BR-06: "Only a maximum of 8 players in that timeslot, including the owner"
+const MAX_PLAYERS_PER_BOOKING = 8; // FR-08 / Pasalo Rules: includes the booking owner.
 
 /**
  * Create a booking for one hour slot on one court/date (BR-03, FR-06).
@@ -246,8 +246,8 @@ async function findJoinRequestsByPlayer(playerId) {
  * used to enforce the 8-player cap before approving a new join request.
  */
 
-async function countApprovedPlayers(bookingId) {
-    const result = await pool.query(
+async function countApprovedPlayers(bookingId, connection = pool) {
+    const result = await connection.query(
         `SELECT COUNT(*):: int AS count
          FROM booking_players
          WHERE booking_id = $1 AND status = 'approved'`,
@@ -287,11 +287,46 @@ async function requestToJoinBooking(bookingId, playerId) {
     return result.rows[0];
 }
 
-async function respondToJoinRequest(bookingPlayerId, approve) {
-  const result = await pool.query(
+/**
+ * PR-123 / FR-08 / NFR-01: serialize decisions on the parent booking, since
+ * different join requests share its capacity. A request-row lock alone would
+ * let two different players claim the last seat. Read the request AFTER the
+ * booking lock is acquired so a waiting responder sees the committed decision.
+ * The controller callback owns authorization/business rules; SQL and transaction
+ * lifetime stay here. Never send an HTTP response until COMMIT has succeeded.
+ */
+async function withLockedJoinRequest(bookingPlayerId, decide) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const result = await client.query(
+            `SELECT b.* FROM bookings b
+             JOIN booking_players bp ON bp.booking_id = b.id
+             WHERE bp.id = $1 FOR UPDATE OF b`,
+            [bookingPlayerId]
+        );
+        const booking = result.rows[0] || null;
+        const request = await client.query(
+            'SELECT * FROM booking_players WHERE id = $1 FOR UPDATE', [bookingPlayerId]
+        );
+        const outcome = await decide({ client, booking, joinRequest: request.rows[0] || null });
+        await client.query('COMMIT');
+        return outcome;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+// Only called inside withLockedJoinRequest. Requiring the transaction client
+// prevents accidentally performing the write on a different pool connection.
+async function respondToJoinRequest(bookingPlayerId, approve, client) {
+  const result = await client.query(
     `UPDATE booking_players
      SET status = $1
-     WHERE id = $2
+     WHERE id = $2 AND status = 'pending'
      RETURNING *`,
     [approve ? 'approved' : 'disapproved', bookingPlayerId]
   );
@@ -326,5 +361,6 @@ module.exports = {
   findJoinRequestsByPlayer,
   requestToJoinBooking,
   respondToJoinRequest,
+  withLockedJoinRequest,
   findJoinRequestById,
 };

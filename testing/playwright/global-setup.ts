@@ -12,7 +12,7 @@ type Account = { email: string; password: string; fullName: string };
 /**
  * Registers every named account in credentials.json before the suite runs -
  * mirroring testing/postman's self-registering test-account convention
- * (docs/specs/2026-08-08-postman-newman-scaffolding-design.md D3) - so a
+ * (docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md D3) - so a
  * fresh `docker compose up` database (CI) ends up with the same accounts a
  * long-lived local dev database previously only had because a developer
  * registered them by hand.

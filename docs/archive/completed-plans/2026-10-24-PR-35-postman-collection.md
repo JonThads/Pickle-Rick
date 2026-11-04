@@ -1,5 +1,12 @@
 # PR-35 Postman Collection Implementation Plan
 
+> **Archived 2026-11-03 (PR-134): historical implementation plan.** The work
+> and execution record below preserve original decisions. Old permissions,
+> branches, checkboxes, and instructions are not current authorization.
+> Use the [Postman guide](../../../testing/postman/README.md),
+> [verification report](../../verification/2026-10-24-PR-35-postman.md), and
+> [current workflow](../../workflow/CODEX-INSTRUCTIONS.md) for subsequent work.
+
 **Goal:** Complete the existing smoke/sanity collection against every currently mounted business endpoint, including the negative cases in Jira PR-35, and leave no test data or uploaded files behind.
 
 **Architecture:** Keep the importable Postman v2.1 JSON and existing Newman runner. Use disposable run-specific accounts and runtime passwords/tokens. End the collection with API account deletion; retain SQL teardown as a failure fallback, scoped to this Compose project. No application or schema changes.

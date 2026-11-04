@@ -1,7 +1,9 @@
 # Postman / Newman Suite
 
 PR-35 smoke/sanity coverage for all **23 implemented business endpoints**:
-151 requests and 374 assertions, including PR-92 deleted-account token checks.
+174 collection requests (176 HTTP requests including concurrent callbacks) and
+447 assertions, including PR-92 deleted-account token checks and PR-123 Pasalo
+approval regressions.
 Health, metrics and uploaded-file retrieval
 are also exercised. The API currently mounts `/api`, not the planned `/api/v1`.
 Purchasing and analytics endpoints do not exist yet and are outside this suite.
@@ -58,13 +60,23 @@ folders depend on accounts, tokens and resources created earlier.
 | Player Bookings | Auto/manual creation, duplicate own request, approved-slot conflict, missing input, own list, foreign cancellation rejection (BR-03/06, FR-03–06) |
 | Booking Acceptance | Owner approval/cancellation, foreign-admin read/approve/cancel rejection and unchanged pending status, wrong-role rejection, approved-slot availability (BR-04/05, FR-04/06, UC-05-02) |
 | Pasalo | Join, incoming/outgoing, foreign responder, acceptance/rejection, seven joiners plus owner, join and approval rejection at capacity (FR-07/08, Pasalo Rules) |
+| Pasalo Atomic Approval - PR-123 | Two overlapping approvals for one remaining place, persisted eight-player roster, approved/disapproved replay conflicts, and disapproval at full capacity (FR-08, NFR-01) |
 | Items | CRUD, foreign admin/player rejection, wrong-court item, unchanged stock after forbidden writes, persisted edits/deletion (BR-07, FR-10, UC-04) |
 | Cleanup | Delete remaining accounts via API and verify tokens return 401; admin deletion cascades courts, bookings, join requests and inventory (BR-08, FR-12, UC-06) |
 
 The multiple-pending-manual-booking requirement remains disputed in the source
 docs; this suite does not decide it. It tests a single pending request and
-rejection once approved. Sequential cap checks do not establish concurrent
-Pasalo approval safety.
+rejection once approved. The PR-123 folder sends two approval HTTP requests
+using concurrent `pm.sendRequest` callbacks, requires one 200 and one 409, and
+checks the persisted roster afterward. The owner counts toward the eight-player
+limit. Already approved or disapproved requests return 409 without changing state.
+
+Additional real PostgreSQL regressions run with
+`docker compose exec -T backend-node npm test` from the repository root. These
+verify both competing approvals actually wait on a held booking-row lock,
+simultaneous approve/disapprove decisions, ownership/missing-resource responses,
+and rollback after an injected SQL failure. Test accounts are deleted afterward
+and their absence is checked. See the dated [PR-123 verification](../../docs/verification/2026-11-03-PR-123-pasalo-approval.md).
 
 ## Cleanup and isolation
 

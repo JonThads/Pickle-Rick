@@ -1,5 +1,13 @@
 # Postman/Newman Scaffolding Implementation Plan
 
+> **Archived 2026-11-03 (PR-134): historical implementation plan.** Scaffolding
+> and collection work now exist. Task checkboxes, commit conventions, branch
+> names, permissions, and agent instructions below describe the original work;
+> do not execute them as current guidance. Use the
+> [current Postman guide](../../../testing/postman/README.md),
+> [PR-35 verification](../../verification/2026-10-24-PR-35-postman.md), and
+> [current workflow](../../workflow/CODEX-INSTRUCTIONS.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create `testing/postman/` with a runnable, reproducible Newman setup and a working teardown, containing no test requests.
@@ -8,12 +16,12 @@
 
 **Tech Stack:** Node.js 24, Newman 6.x, newman-reporter-htmlextra, PostgreSQL 16 (via `docker compose exec psql`), Postman Collection Format v2.1.
 
-**Spec:** [`docs/specs/2026-08-08-postman-newman-scaffolding-design.md`](../specs/2026-08-08-postman-newman-scaffolding-design.md) — decision IDs (D1–D8) below refer to that document.
+**Spec:** [`docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md`](2026-08-08-postman-newman-scaffolding-design.md) — decision IDs (D1–D8) below refer to that document.
 
 ## Global Constraints
 
 - **Branch:** all work lands on `test/postman-initial-setup`, cut from `qa`. Never commit to `qa` or `main` directly.
-- **Commit format:** `[test]: description` — bracketed type per `docs/claude-instructions.md`. Doc-only commits use `[docs]:`.
+- **Commit format:** `[test]: description` — bracketed type per `docs/workflow/claude-instructions.md`. Doc-only commits use `[docs]:`.
 - **No test requests.** Every collection folder ships empty. Adding a request is out of scope and belongs to `test/postman-smoke`.
 - **Test-data prefix (D3):** `pm-{{runId}}-<role>@picklerick.test`. The literal SQL pattern is `pm-%@picklerick.test`, used verbatim in teardown.
 - **DB credentials (matches `docker-compose.yml`):** user `pickle_rick`, database `pickle_rick`, service name `postgres`.
@@ -187,7 +195,7 @@ Expected: failure — `Cannot find module '.../scripts/teardown.js'`. This is th
 //
 // This talks to Postgres directly instead of calling the API, because there
 // is no DELETE endpoint for users - see decision D4 in
-// docs/specs/2026-08-08-postman-newman-scaffolding-design.md for why adding
+// docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md for why adding
 // one was deliberately left to its own branch.
 //
 // Safe by construction: every statement is scoped to emails matching
@@ -606,7 +614,7 @@ git add testing/postman/scripts/run.js && git commit -m "[test]: run newman via 
 **Files:**
 - Create: `testing/postman/README.md`
 - Modify: `CLAUDE.md` (§ Testing, the Postman line)
-- Modify: `docs/roadmap.md` (§2 Testing, the Postman bullet)
+- Modify: `docs/planning/roadmap.md` (§2 Testing, the Postman bullet)
 
 - [ ] **Step 1: Write `testing/postman/README.md`**
 
@@ -691,7 +699,7 @@ delete for it here.** `ON_ERROR_STOP=1` means a schema mismatch fails
 loudly rather than silently leaving rows behind.
 
 Full rationale:
-[`docs/specs/2026-08-08-postman-newman-scaffolding-design.md`](../../docs/specs/2026-08-08-postman-newman-scaffolding-design.md)
+[`docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md`](2026-08-08-postman-newman-scaffolding-design.md)
 ````
 
 - [ ] **Step 2: Update the Postman line in `CLAUDE.md`**
@@ -715,7 +723,7 @@ This is a correctness fix, not a style change: as written, the file
 instructs a reader to run a command that violates the cleanup rule stated
 further down the same section (D6).
 
-- [ ] **Step 3: Update `docs/roadmap.md`**
+- [ ] **Step 3: Update `docs/planning/roadmap.md`**
 
 In §2 under "Testing — nothing exists yet", replace:
 
@@ -749,7 +757,7 @@ Expected: no hits outside `testing/postman/README.md`'s explicit
 - [ ] **Step 5: Commit**
 
 ```bash
-git add testing/postman/README.md CLAUDE.md docs/roadmap.md && git commit -m "[docs]: document postman suite setup and fix cleanup-bypassing run command"
+git add testing/postman/README.md CLAUDE.md docs/planning/roadmap.md && git commit -m "[docs]: document postman suite setup and fix cleanup-bypassing run command"
 ```
 
 ---
