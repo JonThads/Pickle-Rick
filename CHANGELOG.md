@@ -6,6 +6,7 @@ _History backfilled from Git through `1a5c86e`; subsequent completed changes acc
 
 ### Changed
 
+- Audit booking constraint comments against the schema, distinguish approved-slot protection from pending-request guards, and preserve the unresolved initial-booking policy without changing behavior ([PR-17](https://pickle-rick.atlassian.net/browse/PR-17)); see the [audit evidence](docs/verification/2026-11-04-PR-17-booking-comments.md).
 - Organize documentation by purpose, index the reading order, archive historical plans, and require changelog updates with every completed change set ([PR-134](https://pickle-rick.atlassian.net/browse/PR-134)).
 - Bind local development service ports to localhost to limit exposure on the local network ([PR-120](https://pickle-rick.atlassian.net/browse/PR-120)).
 

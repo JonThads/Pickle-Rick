@@ -23,6 +23,7 @@ Documents are grouped by purpose, regardless of which tool wrote them.
 
 ## Planning
 
+- [PR-17 booking comment audit plan](planning/2026-11-04-PR-17-booking-comments-plan.md): scope and verification steps for the comment-only audit.
 - [Roadmap](planning/roadmap.md): implementation direction and dated progress notes.
 - [Project plan overview](planning/project-plan-overview.md): delivery rationale, traceability, and historical backlog snapshot; live Jira owns ticket status.
 - [Pickle Rick 2.0 initiative](planning/2026-11-01-pickle-rick-2-0-initiative.md): proposed working agreement, versions, redesign, and learning track.
@@ -31,6 +32,7 @@ Documents are grouped by purpose, regardless of which tool wrote them.
 
 ## Verification and history
 
+- [PR-17 booking constraint comment audit](verification/2026-11-04-PR-17-booking-comments.md)
 - [PR-123 Pasalo approval verification](verification/2026-11-03-PR-123-pasalo-approval.md)
 - [PR-14 court-name verification](verification/2026-10-24-PR-14-court-name-fix.md)
 - [PR-35 Postman verification](verification/2026-10-24-PR-35-postman.md)

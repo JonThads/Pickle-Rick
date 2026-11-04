@@ -25,9 +25,12 @@ async function createBooking(req, res, next) {
             return res.status(404).json({ error: 'Court not found' });
         }
 
-        // Stop the same player from submitting a second request for a slot
-        // they already hold (pending or approved) - not a documented rule by
-        // ID, but a sane guard against accidental double-submits.
+        // PR-17 / FR-06 / NFR-02: the approved-slot guard applies to every
+        // player; the duplicate-request guard also blocks this player's own
+        // pending request. The model repeats both checks under a court lock.
+        // Different players' pending requests currently coexist. Business
+        // Rules forbid this, while UC-05-02 (Admin) assumes it: the project owner must
+        // resolve that policy. Pasalo joins are a separate flow (FR-08).
         const existing = await Booking.findBookingsForCourtOnDate(courtId, bookingDate);
         // PR-13 / FR-06: pending inserts do not hit the approved-only unique
         // index. Check all players' approved bookings, not just this player's.
@@ -126,10 +129,12 @@ async function listMyBookings(req, res, next) {
 
 /**
  * PATCH /api/bookings/:id/approve  (admin only)
- * UC-05-02 (Admin flow): admin approves one player's booking for a
- * contested slot; every other pending booking for that same slot should be
- * cancelled (Result step 3 in the use case doc). The controller authorizes
- * the actor; the model keeps both SQL updates on one transaction (PR-15).
+ * UC-05-02 (Admin flow): current behavior approves one player's booking and
+ * cancels other pending bookings for that slot (Result step 3). This does
+ * not settle whether competing initial requests should be allowed; see the
+ * unresolved Business Rules/use-case conflict above (PR-17 / NFR-02).
+ * The controller authorizes the actor; the model keeps both SQL updates
+ * on one transaction (PR-15).
  */
 
 async function approveBooking(req, res, next) {
