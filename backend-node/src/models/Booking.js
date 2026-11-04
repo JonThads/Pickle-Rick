@@ -16,6 +16,10 @@ const MAX_PLAYERS_PER_BOOKING = 8; // FR-08 / Pasalo Rules: includes the booking
  * deliberately simple: it also works when the slot has no booking row yet.
  * It serializes writes per court, which is acceptable for this local app.
  * The partial unique index is a final guard for APPROVED rows only.
+ * PR-17 / NFR-02: different players' PENDING requests currently coexist;
+ * this describes implementation, not an agreed booking policy. Business
+ * Rules forbid competing initial requests, but UC-05-02 (Admin) assumes
+ * them. The project owner's decision remains open; FR-08 Pasalo joins are separate.
  */
 
 async function createBooking({ courtId, bookedBy, bookingDate, startHour, status }) {
@@ -109,10 +113,11 @@ async function updateBookingStatus(bookingId, status) {
 }
 
 /**
- * UC-05-02 (Admin): once the admin approves one player's request for a
+ * UC-05-02 (Admin), current behavior: once the admin approves a request for a
  * contested slot, every other still-PENDING request for that same
  * court/date/hour is cancelled. Only touches 'pending' rows, so it never
- * clobbers a booking that's already 'approved' or 'cancelled'.
+ * clobbers a booking that's already 'approved' or 'cancelled'. This cleanup
+ * does not resolve the competing-pending-request policy noted above (PR-17).
  */
 
 async function cancelOtherPendingBookingsForSlot(client, bookingId, courtId, bookingDate, startHour) {
