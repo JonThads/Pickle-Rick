@@ -92,11 +92,14 @@ CREATE TABLE IF NOT EXISTS bookings (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- A blanket UNIQUE(court_id, booking_date, start_hour) would block UC-05-02's
--- Admin flow, where several players' PENDING requests for the same slot must
--- coexist until the admin approves one (which then cancels the rest). Only
--- APPROVED bookings need to be mutually exclusive per slot, so this is a
--- partial index rather than a table constraint.
+-- PR-17 / FR-06 / NFR-02: idx_bookings_slot_approved enforces at most one
+-- APPROVED booking per court/date/hour. PENDING and CANCELLED rows are outside
+-- this partial index; it cannot stop a pending insert into an approved slot.
+-- The controller/model guards enforce that restriction (FR-06).
+-- Different players' pending requests currently coexist, as UC-05-02 (Admin)
+-- assumes, but Business Rules forbid competing initial requests. That policy
+-- remains a project-owner decision; this index does not establish an approved rule.
+-- FR-08 Pasalo joins use booking_players and are a separate flow.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_slot_approved
     ON bookings (court_id, booking_date, start_hour)
     WHERE status = 'approved';
