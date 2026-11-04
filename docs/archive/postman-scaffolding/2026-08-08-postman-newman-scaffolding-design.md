@@ -1,5 +1,13 @@
 # Design Spec — Postman/Newman Suite Scaffolding
 
+> **Archived 2026-11-03 (PR-134): historical design.** The pending-implementation
+> status below is the original snapshot, not today's status. Decisions remain
+> available for traceability, but current code and the
+> [Postman guide](../../../testing/postman/README.md) describe today's tooling.
+> See [PR-35 verification](../../verification/2026-10-24-PR-35-postman.md) for
+> dated execution evidence and the [current workflow](../../workflow/CODEX-INSTRUCTIONS.md)
+> for active instructions.
+
 *Pickle Rick*
 
 | | |
@@ -87,7 +95,7 @@ reviewable fact in git and makes `npm ci` the single setup step for both a new
 laptop and a GitHub Actions runner.
 
 This also honours the lockfile-discipline item in
-`docs/claude-instructions.md` § "Suggested standards not yet adopted".
+`docs/workflow/claude-instructions.md` § "Suggested standards not yet adopted".
 
 ### D2 — Directory layout mirrors `testing/playwright/`
 
@@ -242,7 +250,7 @@ violate the project's own cleanup rule. This branch updates that line.
 
 **Why:** those are exactly the sheet names in
 `testing/test-cases/Pickle Rick Test Cases.xlsx` (verified against the
-workbook, not assumed). `docs/claude-instructions.md` requires each automated
+workbook, not assumed). `docs/workflow/claude-instructions.md` requires each automated
 test to be traceable to a `Ref No`, and matching the folder structure to the
 sheet structure makes that mapping mechanical instead of a judgement call made
 fresh on each branch.
@@ -299,7 +307,7 @@ This serves NFR-03 (publishable to GitHub with no security or privacy issues).
 | --- | --- |
 | `.gitignore` | Add `testing/postman/environments/local.postman_environment.json` and `testing/postman/newman/` |
 | `CLAUDE.md` | § Testing — replace the bare `newman run …` line with `cd testing/postman && npm test`, per D6 |
-| `docs/roadmap.md` | Tick the Postman line item in §2; note it is scaffolding-only with content pending |
+| `docs/planning/roadmap.md` | Tick the Postman line item in §2; note it is scaffolding-only with content pending |
 
 ---
 
@@ -339,7 +347,7 @@ teardown is built first rather than alongside the first requests.
 
 ## 7. Out-of-scope observation
 
-`docs/roadmap.md` §2 still reads "Testing — nothing exists yet /
+`docs/planning/roadmap.md` §2 still reads "Testing — nothing exists yet /
 `testing/` isn't in the repo at all". That is stale — `testing/playwright/`
 has since been built and merged. This branch corrects only the Postman line
 it touches; bringing the Playwright entries up to date is a separate
@@ -353,12 +361,12 @@ it touches; bringing the Playwright entries up to date is a separate
 | --- | --- |
 | NFR-03 (publishable, no security issues) | D8 — secrets and tokens never reach git |
 | `CLAUDE.md` § Testing (cleanup rule) | D3, D4, D5, D6 — teardown built in, not bolted on |
-| `docs/claude-instructions.md` § Testing (`Ref No` traceability) | D7 — folders mirror workbook sheets |
-| `docs/claude-instructions.md` § Lockfile discipline | D1 — committed lockfile |
-| `docs/roadmap.md` §2, §3.5 (Postman first) | This branch is the first step of that phase |
+| `docs/workflow/claude-instructions.md` § Testing (`Ref No` traceability) | D7 — folders mirror workbook sheets |
+| `docs/workflow/claude-instructions.md` § Lockfile discipline | D1 — committed lockfile |
+| `docs/planning/roadmap.md` §2, §3.5 (Postman first) | This branch is the first step of that phase |
 
 ---
 
-*Cross-reference: [claude-instructions.md](../claude-instructions.md),
-[roadmap.md](../roadmap.md),
-[software-requirements-specification.md](../software-requirements-specification.md).*
+*Cross-reference: [claude-instructions.md](../../workflow/claude-instructions.md),
+[roadmap.md](../../planning/roadmap.md),
+[software-requirements-specification.md](../../requirements/software-requirements-specification.md).*

@@ -1,5 +1,12 @@
 # Pickle Rick — Scale-Up Roadmap
 
+> **Status scope — reorganized 2026-11-03 (PR-134).** This roadmap combines
+> an August baseline with later dated updates and November proposals. Old
+> checkboxes and pending-merge notes are not current verification. Check source
+> and live Jira/GitHub before relying on their status. The
+> [changelog](../../CHANGELOG.md) summarizes completed changes; the
+> [delivery overview](project-plan-overview.md) preserves historical rationale.
+
 *Reference doc — snapshot of what's built vs. what's left, checked against
 the five docs in `docs/` (BRD, Business Rules, SRS, Use Cases,
 claude-instructions) as of 2026-08-04.*
@@ -14,7 +21,7 @@ PR-13 approved-slot rejection, PR-15 transactional approval and PR-16 order
 defaults. All 12 real API/database regressions passed against fresh Docker;
 the three new UI regressions passed headed Chromium. Full browser results
 and integration evidence are tracked in
-[remaining bug verification](verification/2026-10-24-remaining-bugs.md).
+[remaining bug verification](../verification/2026-10-24-remaining-bugs.md).
 Remote QA/Main PR gates remain required before promoting this branch.
 
 ---
@@ -51,7 +58,7 @@ Remote QA/Main PR gates remain required before promoting this branch.
 
 ### Infra
 - [x] `docker-compose.yml`: postgres, backend-node, frontend, pgadmin —
-  runs non-detached per `docs/claude-instructions.md`
+  runs non-detached per `docs/workflow/claude-instructions.md`
 - [x] Dockerfiles for `backend-node` and `frontend`
 
 ### Testing (`testing/`)
@@ -60,7 +67,7 @@ Remote QA/Main PR gates remain required before promoting this branch.
   endpoints, 147 requests / 366 assertions, final API cleanup and SQL/file
   fallback. Two full runs passed on an isolated Docker database; failure
   cleanup also verified. Includes the Pasalo `disapproved` column-width fix.
-  See [PR-35 evidence](verification/2026-10-24-PR-35-postman.md); pending PR merge.
+  See [PR-35 evidence](../verification/2026-10-24-PR-35-postman.md); pending PR merge.
 - [x] k6 smoke test (`testing/k6/smoke-test.js`)
 - [x] Playwright + TS suite (`testing/playwright/`) — Auth, Court Management,
   and scoped booking-defect regressions; headful locally, headless in CI via
@@ -166,17 +173,17 @@ everything built before it:
 ## 4. Upcoming initiatives (proposed 2026-11-01, not yet approved)
 
 - **Cloud platform (Supabase + Vercel)** — see
-  [migration plan](plans/2026-11-01-supabase-vercel-migration-plan.md) and
-  [deploy timing analysis](plans/2026-11-01-deploy-timing-analysis.md).
+  [migration plan](2026-11-01-supabase-vercel-migration-plan.md) and
+  [deploy timing analysis](2026-11-01-deploy-timing-analysis.md).
   Recommendation: private QA first, public production at the MVP gate (`v1.2.0`).
 - **Pickle Rick 2.0** (frontend redesign, "What's new" release history),
   agile working agreement, and the systems-thinking learning track — see
-  [2.0 initiative](plans/2026-11-01-pickle-rick-2-0-initiative.md).
+  [2.0 initiative](2026-11-01-pickle-rick-2-0-initiative.md).
 
 ---
 
-*Cross-reference: [business-requirements.md](business-requirements.md),
-[business-rules.md](business-rules.md),
-[software-requirements-specification.md](software-requirements-specification.md),
-[use-case-specification.md](use-case-specification.md),
-[claude-instructions.md](claude-instructions.md).*
+*Cross-reference: [business-requirements.md](../requirements/business-requirements.md),
+[business-rules.md](../requirements/business-rules.md),
+[software-requirements-specification.md](../requirements/software-requirements-specification.md),
+[use-case-specification.md](../requirements/use-case-specification.md),
+[claude-instructions.md](../workflow/claude-instructions.md).*

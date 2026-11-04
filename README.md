@@ -31,7 +31,7 @@ Admins manage courts, inventory, and bookings; Players find courts in their loca
   - Permanent, password-confirmed self-deletion for both Players and Admins
   - Deleting an Admin cascades to their courts and every booking made on them
 
-- 🔨 **In progress** — Shop/checkout (Player-side purchasing against a court's inventory) and the `analytics-service-python` revenue/profit dashboard. See [docs/roadmap.md](docs/roadmap.md) for current status.
+- 🔨 **In progress** — Shop/checkout (Player-side purchasing against a court's inventory) and the `analytics-service-python` revenue/profit dashboard. See [docs/planning/roadmap.md](docs/planning/roadmap.md) for current status.
 
 ---
 
@@ -50,13 +50,17 @@ Admins manage courts, inventory, and bookings; Players find courts in their loca
 
 ## 📚 Documentation
 
-The full requirements and rules this project is built against live in [`docs/`](docs/):
+Start with the [documentation index](docs/README.md) for the reading order,
+plans, workflow guides, and historical verification. Completed changes are
+recorded in the root [changelog](CHANGELOG.md).
 
-- [Business Requirements](docs/business-requirements.md)
-- [Business Rules](docs/business-rules.md)
-- [Software Requirements Specification](docs/software-requirements-specification.md)
-- [Use Case Specification](docs/use-case-specification.md)
-- [Roadmap](docs/roadmap.md) - what's built vs. what's remaining, kept in sync with reality
+The full requirements and rules this project is built against are:
+
+- [Business Requirements](docs/requirements/business-requirements.md)
+- [Business Rules](docs/requirements/business-rules.md)
+- [Software Requirements Specification](docs/requirements/software-requirements-specification.md)
+- [Use Case Specification](docs/requirements/use-case-specification.md)
+- [Roadmap](docs/planning/roadmap.md) - what's built vs. what's remaining, kept in sync with reality
 
 ---
 

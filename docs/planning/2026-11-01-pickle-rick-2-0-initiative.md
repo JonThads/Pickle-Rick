@@ -76,7 +76,7 @@ cited (BR/FR/NFR/UC) · dependencies known · fits in ~1 day of work.
 - [ ] Tests added/updated and green in CI (Postman/Playwright where it touches behaviour); test data cleaned up
 - [ ] Deployed to QA and **checked there by you**
 - [ ] Docs updated (roadmap, business rules/SRS if rules changed, runbook if ops changed)
-- [ ] CHANGELOG entry added if user- or operator-visible
+- [ ] Root [CHANGELOG.md](../../CHANGELOG.md) updated in the same change set for every completed code, configuration, test, or documentation change; related edits consolidated, with Jira/PR references when available
 - [ ] If it involved a design choice: an ADR (below)
 - [ ] You can **explain it back** (§4.3)
 
@@ -84,7 +84,7 @@ cited (BR/FR/NFR/UC) · dependencies known · fits in ~1 day of work.
 
 `<prefix>/PR-<n>-<purpose>` off `qa` → PR to `qa` (QA pipeline) → PR `qa`→`main`
 (Main pipeline). Conventional Commits with the Jira key. This already matches
-`docs/claude-instructions.md`; nothing new to learn here.
+`docs/workflow/claude-instructions.md`; nothing new to learn here.
 
 ### 1.5 Metrics (lightweight, for learning, not for reporting)
 
@@ -154,7 +154,7 @@ CHANGELOG.md  ──(developer-facing, Common Changelog format)──► GitHub 
                        /whats-new page  +  "New" badge (localStorage: lastSeenVersion)
 ```
 
-- **Two audiences, two files, one source of truth per audience.** `CHANGELOG.md` (already mandated by `docs/claude-instructions.md` — Common Changelog) is for developers; `releases/*.md` is in plain, friendly language for users. Don't try to make one file serve both.
+- **Two audiences, two files, one source of truth per audience.** `CHANGELOG.md` (already mandated by `docs/workflow/claude-instructions.md` — Common Changelog) is for developers; `releases/*.md` is in plain, friendly language for users. Don't try to make one file serve both.
 - **Static, no backend, no database.** Content ships with the frontend build, costs nothing on Vercel, and can't fail independently of the app. *Trade-off:* editing needs a redeploy. For a project releasing a few times a month that is fine; a CMS or DB table would add a moving part with no benefit now.
 - Version injected at build time (`define` in Vite from `package.json`) and returned by the API's `/health`, so the UI and server can each show what's running.
 - Backfill 1.0.0 and 1.1.0 from `git log`.
@@ -240,7 +240,7 @@ walk-through with Claude (it draws a diagram and quizzes you) before moving on.
 ### 4.4 Guardrails against "vibe-coding drift"
 
 - Every architectural choice has an **ADR you can read in two minutes**
-- Business rules live in `docs/business-rules.md`; behaviour changes need a doc change first
+- Business rules live in `docs/requirements/business-rules.md`; behaviour changes need a doc change first
 - Tests describe behaviour (test case Ref Nos), so you can read *what the system promises* without reading code
 - CI gates (lint, tests, secrets scan) mean you don't have to review every line to trust the baseline
 - A monthly **architecture walk-through**: pick a flow, trace it end-to-end with Claude, find one thing that surprised you, write it in the retro

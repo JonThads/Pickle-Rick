@@ -1,7 +1,7 @@
 # Supabase + Vercel Migration — Action & Implementation Plan
 
 *Pickle Rick · drafted 2026-11-01 · status: PROPOSED (nothing implemented)*
-*Jira: Epic PR-10 (Cloud Deployment). Cross-checked against `docs/roadmap.md`
+*Jira: Epic PR-10 (Cloud Deployment). Cross-checked against `docs/planning/roadmap.md`
 and the 81 open issues in the `PR` project.*
 
 ---

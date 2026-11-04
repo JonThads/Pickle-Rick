@@ -11,7 +11,7 @@ type Account = { email: string; password: string };
  * `DELETE /api/auth/me` (BR-08, password re-confirmed) - so the suite
  * leaves no rows behind (CLAUDE.md § Testing cleanup rule), same intent as
  * testing/postman's `run.js` teardown-in-`finally`
- * (docs/specs/2026-08-08-postman-newman-scaffolding-design.md D6), just
+ * (docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md D6), just
  * simpler here since the delete endpoint didn't exist when that doc was
  * written.
  *

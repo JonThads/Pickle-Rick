@@ -1,7 +1,7 @@
 // Drives the suite through Newman's Node API rather than the bare CLI, so
 // teardown can run inside a `finally` block and fire on pass, on assertion
 // failure, and on thrown exception alike - see
-// docs/specs/2026-08-08-postman-newman-scaffolding-design.md D6.
+// docs/archive/postman-scaffolding/2026-08-08-postman-newman-scaffolding-design.md D6.
 //
 // Known gap, accepted: `finally` does not run on SIGINT. A run killed with
 // Ctrl+C can leave rows behind; `npm run teardown` recovers the reserved pm-

@@ -102,41 +102,17 @@ here.
 
 Use the standards established in [conventionalbranch.org](https://conventionalbranch.org/)
 
-Note:
-
-- Branch "main" for Production
-- Branch "qa" for QA and Testing
-- Local development branches, all cut from `qa`, prefixed by purpose
-  (mirrors the commit-type prefixes in "Professional / Production-Grade
-  Conventions" below):
-  - `feature/<purpose>` — new functionality
-  - `fix/<purpose>` — bug fixes
-  - `test/<purpose>` — test infrastructure/tooling (Postman, k6,
-    Playwright) — this is process/tooling work, not a shipped product
-    feature, so it gets its own prefix rather than living under `feature/`
-  - `chore/<purpose>` — dependency, config, or tooling work with no
-    behavior change
-  - `docs/<purpose>` — documentation-only changes
-  - `refactor/<purpose>` — internal restructuring, no behavior change
-  - `ci/<purpose>` — GitHub Actions / pipeline changes
+Use the prefixes and integration flow in [Branches](#branches). Include the
+Jira key in the branch name, for example `docs/PR-134-documentation-structure`.
 
 ### Conventional Commits
 
-Disregard already used previous Commit Messaging Standard primarily,
-
-"Already in use (see `git log`): `[Type]: description`. Keep using it,
-with the full type list, matching the branch prefixes above: `feature`,
-`fix`, `docs`, `chore`, `test`, `refactor`, `perf`, `ci`."
-
-Instead, use the standards established in [Conventional Commits](https://www.conventionalcommits.org/).
-
-Also use the Jira Work Item keys for the git commit messages (For example, git commit -m "JRA-123) to reference work items in development spaces. When you create a pull request, use the key in the pull request title.
+Use [Conventional Commits](https://www.conventionalcommits.org/), including the
+Jira key, for example `docs: PR-134 organize documentation by purpose`. This
+replaces the historical `[Type]: description` convention. Include the Jira key
+in the pull request title as well.
 
 Jira Reference: [support.atlassian.com/jira-software-cloud/docs/reference-issues-in-your-development-work](https://support.atlassian.com/jira-software-cloud/docs/reference-issues-in-your-development-work/)
-
-For Pull Requests:
-
-Check out a new branch in your repo, using the work item key in the branch name. For example, git checkout -b JRA-123-<branch-name></branch>.When you create a pull request, use the work item key in the pull request title.
 
 ### Jira Board Hygiene
 
@@ -168,7 +144,30 @@ For example, "[Comment] as per Jira Work Item RAG-14"
 
 ### Common Changelog
 
-Use the standards established in [common-changelog.org](https://common-changelog.org/)
+Use [Common Changelog](https://common-changelog.org/) for release entries in
+the root [CHANGELOG.md](../../CHANGELOG.md). Group entries under Changed,
+Added, Removed, and Fixed as needed, and link supporting records. Use verified
+version tags and release dates only.
+
+### Documentation maintenance
+
+For every completed code, configuration, test, or documentation change, update
+[CHANGELOG.md](../../CHANGELOG.md) in the same change set. Explain what changed
+and why, link the Jira issue or PR when available, and consolidate related
+edits into one entry. Record completed work, not proposals or unrun checks.
+The project uses Unreleased for accumulated untagged work; release entries
+follow Common Changelog when a real tag is prepared. Do not invent versions
+or use commit dates as unverified release dates.
+
+Update affected requirements, plans, setup instructions, and links alongside
+the change. Preserve requirement IDs and distinguish proposed, implemented,
+and tested behavior. Mark dated snapshots and consult live Jira/GitHub for
+current issue/PR status. These checks prevent documentation drift.
+
+Use the [documentation index](../README.md) for placement: active plans and
+designs belong in `docs/planning/`, verification reports in `docs/verification/`,
+and historical plans in `docs/archive/`. These paths override tool defaults.
+Archived execution instructions and permissions are historical only.
 
 ### Suggested standards not yet adopted
 
@@ -193,5 +192,3 @@ relevant to the work already in progress, or when asked:
   surface grows much further — cheap now, expensive to retrofit later.
 - **Lockfile discipline**: commit `package-lock.json` / a pinned
   `requirements.txt`; don't hand-edit them.
-- **Changelog**: `CHANGELOG.md` once `main` starts getting tagged
-  releases.
