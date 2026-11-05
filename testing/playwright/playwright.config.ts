@@ -13,9 +13,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
-  /* Registers/tears down the named accounts in credentials.json against the
-     backend API before/after the whole run - see global-setup.ts and
-     global-teardown.ts for why. */
+  /* PR-122: register unique disposable aliases and delete only identities
+     recorded by this run. Requires explicit disposable-database opt-in. */
   globalSetup: './global-setup.ts',
   globalTeardown: './global-teardown.ts',
   /* Run tests in files in parallel */

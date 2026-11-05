@@ -394,7 +394,9 @@ works and should not be rebuilt — these tickets are **coverage**, not setup.
 **PR-51 closes a documented loop.** `CLAUDE.md` states PRs are deliberately
 skipped *until the pipelines exist* — that reasoning expires here.
 
-**Status update (2026-08-15):** PR-45, PR-46, and PR-47 are done — all
+**Historical status update (2026-08-15; named-account teardown superseded by
+the PR-122 implementation on 2026-11-05; user validation confirmed, live merge
+status in GitHub):** PR-45, PR-46, and PR-47 are done — all
 three pipelines exist and are enforced (`.github/workflows/`), and
 branch protection on `main` requires the suite, image-build, and
 secrets-scan checks before merge. PR-46's original blocker

@@ -109,22 +109,23 @@ jobs:
         working-directory: testing/playwright
         run: npx playwright install --with-deps chromium firefox webkit
 
-      # ⚠️ Prerequisite this workflow assumes, not yet done: playwright.config.ts
-      # currently hardcodes `headless: false` unconditionally, because
-      # project policy (docs/workflow/claude-instructions.md §Environment) is to run
-      # Playwright headful LOCALLY so automation stays observable. PR-46's
-      # own description says headless in CI does not violate that policy -
-      # CI has no display to watch. `forbidOnly`/`retries` in that same
-      # config file already branch on `process.env.CI`; `headless` needs
-      # the same one-line treatment:
-      #     headless: !!process.env.CI
-      # GitHub Actions sets CI=true on every run automatically, so once
-      # that line lands in playwright.config.ts, no further change is
-      # needed here.
+      - name: Check Playwright account ownership safeguards
+        working-directory: testing/playwright
+        run: npm run test:safety
+
+      - name: Verify Playwright cleanup against the disposable database
+        working-directory: testing/playwright
+        env:
+          PW_ALLOW_DISPOSABLE_DB: '1'
+        run: npm run test:lifecycle
+
+      # PR-122: this job provisions a fresh disposable stack. CI=true alone
+      # is not permission for a suite to modify a database.
       - name: Run Playwright Suite (headless in CI)
         working-directory: testing/playwright
         env:
           CI: true
+          PW_ALLOW_DISPOSABLE_DB: '1'
         run: npx playwright test
 
       - name: Upload Playwright HTML report
