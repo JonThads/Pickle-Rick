@@ -1,26 +1,38 @@
 import fs from 'fs';
 import path from 'path';
 
-interface TestAccount {
+export interface TestAccount {
   email: string;
   password: string;
   fullName: string;
 }
 
-interface Credentials {
+export interface Credentials {
   players: Record<string, TestAccount>;
   admins: Record<string, TestAccount>;
 }
 
 const CREDENTIALS_PATH = path.resolve(__dirname, '../credentials.json');
 
-// credentials.json is gitignored (real accounts/passwords, never committed) -
-// see credentials.example.json for the shape a fresh clone needs to fill in.
-if (!fs.existsSync(CREDENTIALS_PATH)) {
-  throw new Error(
-    `Missing ${CREDENTIALS_PATH}. Copy credentials.example.json to credentials.json ` +
-      'and fill in real test account details before running specs that log in.'
-  );
+export function loadCredentialTemplates(): Credentials {
+  const credentialPath = process.env.PW_CREDENTIALS_FILE ? path.resolve(process.env.PW_CREDENTIALS_FILE) : CREDENTIALS_PATH;
+  if (!fs.existsSync(credentialPath)) {
+    throw new Error(`Missing ${credentialPath}. Copy credentials.example.json to credentials.json; use disposable test templates only.`);
+  }
+  const templates = JSON.parse(fs.readFileSync(credentialPath, 'utf-8'));
+  if (!templates.players || !templates.admins) throw new Error('Credential templates need players and admins groups');
+  return templates;
 }
 
-export const credentials: Credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf-8'));
+function readRunCredentials(): Credentials {
+  const manifestPath = process.env.PW_RUN_MANIFEST;
+  if (!manifestPath) throw new Error('PR-122: no run manifest; execute specs through Playwright global setup');
+  return JSON.parse(fs.readFileSync(manifestPath, 'utf8')).credentials;
+}
+
+// Lazy getters allow test discovery without provisioning or reading private
+// credentials. During execution workers use aliases created by setup.
+export const credentials: Credentials = {
+  get players() { return readRunCredentials().players; },
+  get admins() { return readRunCredentials().admins; },
+};

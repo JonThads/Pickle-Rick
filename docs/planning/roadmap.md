@@ -71,9 +71,10 @@ Remote QA/Main PR gates remain required before promoting this branch.
 - [x] k6 smoke test (`testing/k6/smoke-test.js`)
 - [x] Playwright + TS suite (`testing/playwright/`) — Auth, Court Management,
   and scoped booking-defect regressions; headful locally, headless in CI via
-  `process.env.CI`; `global-setup.ts`/`global-teardown.ts` self-register
-  and tear down named test accounts against the live API, mirroring
-  Postman's `pm-` convention with a `pw-` prefix
+  `process.env.CI`. PR-122 implementation (2026-11-05, user validation confirmed;
+  live merge/check status is recorded in GitHub):
+  explicit disposable-database opt-in, unique run aliases, and ownership-based
+  setup/teardown. See [validation](../verification/2026-11-05-PR-122-validation.md).
 
 ### CI/CD (`.github/workflows/`)
 - [x] Development pipeline — lint/build/boot-check, fires on

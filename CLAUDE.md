@@ -8,6 +8,10 @@ in comments when you implement something they describe.
 
 See `README.md` for the full architecture writeup and setup instructions.
 
+Before every implementation, follow the eight stages in
+[the implementation workflow](docs/workflow/implementation-workflow.md), including
+the user's review/testing gate before pushing or merging.
+
 ## The bible — read these before implementing a new feature
 
 @docs/requirements/business-requirements.md

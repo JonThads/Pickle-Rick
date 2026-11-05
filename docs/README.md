@@ -32,6 +32,11 @@ Documents are grouped by purpose, regardless of which tool wrote them.
 
 ## Verification and history
 
+- [Implementation workflow](workflow/implementation-workflow.md): required
+  eight-stage development and promotion sequence.
+- [PR-122 validation guide](verification/2026-11-05-PR-122-validation.md): review,
+  parallel testing instructions, results, cleanup, and pending gates.
+
 - [PR-17 booking constraint comment audit](verification/2026-11-04-PR-17-booking-comments.md)
 - [PR-123 Pasalo approval verification](verification/2026-11-03-PR-123-pasalo-approval.md)
 - [PR-14 court-name verification](verification/2026-10-24-PR-14-court-name-fix.md)

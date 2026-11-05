@@ -6,6 +6,11 @@ _History backfilled from Git through `1a5c86e`; subsequent completed changes acc
 
 ### Changed
 
+- Record the user-approved eight-stage implementation workflow, including
+  branch cleanup, review, parallel validation instructions, and gated promotion.
+  Require a fresh task-specific Docker volume for each fix/implementation and
+  removal of only that task's volumes after successful promotion to `main`.
+
 - Audit booking constraint comments against the schema, distinguish approved-slot protection from pending-request guards, and preserve the unresolved initial-booking policy without changing behavior ([PR-17](https://pickle-rick.atlassian.net/browse/PR-17)); see the [audit evidence](docs/verification/2026-11-04-PR-17-booking-comments.md).
 - Organize documentation by purpose, index the reading order, archive historical plans, and require changelog updates with every completed change set ([PR-134](https://pickle-rick.atlassian.net/browse/PR-134)).
 - Bind local development service ports to localhost to limit exposure on the local network ([PR-120](https://pickle-rick.atlassian.net/browse/PR-120)).
@@ -23,6 +28,12 @@ _History backfilled from Git through `1a5c86e`; subsequent completed changes acc
 - Remove an obsolete local failure-injection helper after confirming it has no project references; retain its historical test reports ([PR-134](https://pickle-rick.atlassian.net/browse/PR-134)).
 
 ### Fixed
+
+- Restrict Playwright account cleanup to identities created by the current run,
+  use unique disposable aliases, require explicit test-database opt-in, roll back
+  partial setup, and retain failed-cleanup ownership records. Add offline and
+  live regressions and validation instructions
+  ([PR-122](https://pickle-rick.atlassian.net/browse/PR-122)).
 
 - Serialize Pasalo approval decisions in one PostgreSQL transaction with a booking-row lock, enforce the eight-player limit including the owner, and return 409 for requests that are no longer pending. Add concurrent Postman/API regressions and SQL rollback coverage ([PR-123](https://pickle-rick.atlassian.net/browse/PR-123)).
 - Reject tokens issued to deleted accounts on protected routes ([PR-92](https://pickle-rick.atlassian.net/browse/PR-92)).
