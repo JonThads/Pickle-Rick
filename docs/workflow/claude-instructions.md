@@ -66,6 +66,14 @@ code merge. All three are implemented (`.github/workflows/`).
 
 ## Testing
 
+- Before every implementation, follow the user-approved
+  [eight-stage workflow](implementation-workflow.md).
+- PR-122: Playwright runs only against a disposable test database with no real
+  accounts. Explicitly opt in using `PW_ALLOW_DISPOSABLE_DB=1`; `CI=true` alone
+  does not opt in. Setup creates run-specific aliases and records successful
+  creations; teardown deletes only those recorded identities. See the
+  [Playwright guide](../../testing/playwright/README.md) for commands and recovery.
+
 - All test types — Smoke/Sanity (Postman), Load (k6), and E2E
   (Playwright) — must clean up any data they create (test users,
   bookings, orders, etc.) once the run finishes. The dev database should

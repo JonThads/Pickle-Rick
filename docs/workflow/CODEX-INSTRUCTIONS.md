@@ -4,6 +4,10 @@ Use this guide to carry out focused, verifiable work in this repository.
 Project purpose, architecture, and core conventions live in [AGENTS.md](../../AGENTS.md).
 This guide adds a task workflow; it does not redefine product requirements.
 
+For every implementation, follow the user-approved
+[eight-stage workflow](implementation-workflow.md). Explicit user review/testing
+gates take precedence over routine push and promotion steps.
+
 ## 1. Start with the requested outcome
 
 1. Read `AGENTS.md`, then inspect `git status --short --branch` and the relevant

@@ -6,7 +6,11 @@
   "directories": {
     "doc": "docs"
   },
-  "scripts": {},
+  "scripts": {
+    "test:safety": "playwright test --config playwright.safety.config.ts",
+    "test:lifecycle": "playwright test --config playwright.lifecycle.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JonThads/Pickle-Rick.git"
