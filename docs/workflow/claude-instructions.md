@@ -80,7 +80,7 @@ code merge. All three are implemented (`.github/workflows/`).
   only ever contain data someone put there on purpose.
 - `testing/test-cases/Pickle Rick Test Cases.xlsx` is the source of truth
   for manual/E2E test case coverage — one sheet per module (Auth, Court
-  Management, Player Bookings, Booking Acceptance, Pasalo), each row
+  Management, Inventory, Player Bookings, Booking Acceptance, Pasalo), each row
   identified by a `Ref No` (e.g. `AUTH-01-001`). When writing a Playwright
   spec for a case, name the `test()` after its `Ref No` and fill in that
   row's `Automation Script` column with the spec file/test name, so the

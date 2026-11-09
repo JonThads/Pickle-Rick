@@ -14,6 +14,8 @@ Audited base: `50e301be555671134872039e52d2be20bf0f7e0a` (`origin/qa`, fetched b
 
 The model's creation and approval paths lock the same parent court row and use one checked-out connection per transaction. The controller's earlier read is not the concurrency boundary. The partial unique index `idx_bookings_slot_approved` provides a final guard against two approved bookings for the same court/date/hour. The `booking_players` uniqueness constraint is separately on `(booking_id, player_id)`; it does not govern initial court requests.
 
+> **Update 2026-11-09 (PR-135):** the project owner resolved this question below: several players may hold Pending requests for one Manual slot and the Admin chooses which to approve. The Business Rules were reworded to match and no behavior change is needed. The section is kept as the dated record of the audit; the source comments still describe the policy as unresolved and can be tidied in a later change.
+
 ## Policy deliberately left unresolved
 
 [FR-06](../requirements/software-requirements-specification.md) permits booking only a slot not tagged approved. [Business Rules](../requirements/business-rules.md) also forbid a second player's request for the same manual court/date/hour. [UC-05-02 (Admin)](../requirements/use-case-specification.md) instead assumes competing initial bookings and cancellation of the others after approval. The current SQL permits different players' pending requests to coexist. This audit preserves that implementation and does not endorse it as the approved rule.
