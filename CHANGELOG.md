@@ -6,6 +6,8 @@ _History backfilled from Git through `1a5c86e`; subsequent completed changes acc
 
 ### Changed
 
+- Refresh the test case spreadsheet before Playwright Codegen work: add 18 cases (registration, duplicate email, account deletion, profile, inventory module, player-location courts, full-booking Pasalo, admin cancel, and the PR-12/13/15 regressions under their modules), correct stale wording and the PR-14-era `COURT-02-001` FAIL (now PASS), and fill Status, Remarks and Automation Script for every row. The suite was re-run headed on an isolated stack (33/33 passed, database empty afterwards); two cases are FAIL for the location defect found by API probe ([PR-135](https://pickle-rick.atlassian.net/browse/PR-135), [PR-136](https://pickle-rick.atlassian.net/browse/PR-136)); see the [audit evidence](docs/verification/2026-11-09-PR-135-test-case-audit.md).
+- Clarify the Business Rules: several players may hold Pending requests for one Manual Approval slot and the Admin chooses which to approve, resolving the conflict recorded in the PR-17 audit ([PR-135](https://pickle-rick.atlassian.net/browse/PR-135)).
 - Record the user-approved eight-stage implementation workflow, including
   branch cleanup, review, parallel validation instructions, and gated promotion.
   Require a fresh task-specific Docker volume for each fix/implementation and

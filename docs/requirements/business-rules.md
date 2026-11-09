@@ -14,9 +14,13 @@
 - Players can only see and book Courts that are in their location. Example:
   Player A's location is Davao, so only Courts from Davao can appear in
   their selection.
-- Only one player can request a booking for a specific hour timeslot, day,
-  and Manually Approved Court. Any succeeding players who attempt to
-  request that same booking are not allowed to.
+- On a Manually Approved Court, several players can each request the same
+  hour timeslot and day. The requests stay Pending so the Court's Admin can
+  decide which player's booking to approve; approving one cancels the others.
+  A single player cannot request the same slot twice. Once a slot is
+  approved, no further requests are accepted for it (clarified 2026-11-09,
+  PR-135, by the project owner; supersedes the earlier "only one player may
+  request" wording).
 
 ## Admin Rules
 
